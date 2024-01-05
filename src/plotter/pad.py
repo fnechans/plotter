@@ -1,5 +1,6 @@
 from . import loader
 from .histo import histo
+from . import thHelper
 import ROOT
 from ROOT import TPad
 from typing import List, Dict, Optional, Any
@@ -66,9 +67,9 @@ class pad:
 
         self.basis: Optional[histo] = None
 
-    def reset_histos(self):
-        """Removes all histograms but keeps all non-histo settings"""
-        self.histos: List[histo] = []
+    def reset_histos(self) -> None:
+        """ Removes all histograms but keeps all non-histo settings"""
+        self.histos = []
         self.customXrange = False
         self.customYrange = False
         self.basis = None
@@ -112,6 +113,9 @@ class pad:
         Arguments:
             doLog (``bool``): if true, set logarithmic
         """
+        if self.yMin < 0 or self.yMax < 0:
+            log.warning("Histogram has negative values, skipping logy")
+            return
         self.tpad.SetLogy(doLog)
         self.isLogY = doLog
 
@@ -137,9 +141,15 @@ class pad:
             h (``histo``): added histogram
         """
 
-        if not self.isTH1:
-            self.histos.append(h)
-            return
+        if h.isTH1:
+            self._update_range_th1(h)
+        elif h.isTGraph:
+            self._update_range_tgraph(h)
+
+        self.histos.append(h)
+
+    def _update_range_th1(self, h: histo) -> None:
+        """Updates yMin/yMax if applicable for TH1"""
 
         if not self.customXrange:
             if self.histos == []:
@@ -147,20 +157,38 @@ class pad:
                 self.xMax = h.th.GetBinLowEdge(h.th.GetNbinsX() + 1)
 
         # if custom range defined, skip the automatic derivation
-        if not self.customYrange and self.isTH1:
-            if self.histos == []:
-                self.yMin = h.th.GetMinimum()
-                self.yMinZero = h.th.GetMinimum(0)
-                self.yMax = h.th.GetMaximum()
-            else:
-                if self.yMin > h.th.GetMinimum():
-                    self.yMin = h.th.GetMinimum()
-                if self.yMinZero > h.th.GetMinimum(0):
-                    self.yMinZero = h.th.GetMinimum(0)
-                if self.yMax < h.th.GetMaximum():
-                    self.yMax = h.th.GetMaximum()
+        if self.customYrange:
+            return
 
-        self.histos.append(h)
+        if self.histos == []:
+            self.yMin = h.th.GetMinimum()
+                self.yMinZero = h.th.GetMinimum(0)
+            self.yMax = h.th.GetMaximum()
+        else:
+            if self.yMin > h.th.GetMinimum():
+                self.yMin = h.th.GetMinimum()
+            if self.yMinZero > h.th.GetMinimum(0):
+                self.yMinZero = h.th.GetMinimum(0)
+            if self.yMax < h.th.GetMaximum():
+                self.yMax = h.th.GetMaximum()
+
+    def _update_range_tgraph(self, h: histo) -> None:
+        """Updates yMin/yMax if applicable for TH1"""
+
+        # if custom range defined, skip the automatic derivation
+        if self.customYrange:
+            return
+
+        if self.histos == []:
+            self.yMin = thHelper.get_graph_minimum(h.th)
+            self.yMax = thHelper.get_graph_maximum(h.th)
+        else:
+            cur_min = thHelper.get_graph_minimum(h.th)
+            if self.yMin > cur_min:
+                self.yMin = cur_min
+            cur_max = thHelper.get_graph_maximum(h.th)
+            if self.yMax < cur_max:
+                self.yMax = cur_max
 
     def plot_histos(self) -> None:
         """Plots histograms, including creation of basis,
@@ -178,12 +206,17 @@ class pad:
         # this is done because we do not want to modify any externally provided
         # histograms
         # TODO: add histo.clone??
-        self.basis = histo(
+        if self.histos[0].isTGraph:
+            self.basis = histo("", self.histos[0].th.Clone("basis").GetHistogram(),
+                               lineColor=ROOT.kWhite, fillColor=ROOT.kWhite,
+                               drawOption="hist")
+        else:
+            self.basis = histo(
             "",
             self.histos[0].th.Clone("basis"),
-            lineColor=ROOT.kWhite,
+                lineColor=ROOT.kWhite,
             fillColor=ROOT.kWhite,
-            drawOption="hist",
+                drawOption="hist",
         )
         self.basis.th.Reset()
         self._set_basis_axis_title()
@@ -202,7 +235,7 @@ class pad:
         self.basis.draw()
 
         for h in self.histos:
-            h.draw(suffix="same")
+            h.draw(suffix=" same")
 
         self.basis.draw(drawOption="sameaxis")
 
@@ -330,25 +363,39 @@ class pad:
         log.debug("Updating basis style")
 
         for opt, set in style.items():
-            if "x_" in opt:
-                axis = self.basis.th.GetXaxis()
-            else:
-                axis = self.basis.th.GetYaxis()
+            self.update_style(opt, set)
 
-            if "titleOffset" in opt:
-                axis.SetTitleOffset(set)
-            elif "titleSize" in opt:
-                axis.SetTitleSize(set)
-            elif "titleFont" in opt:
-                axis.SetTitleFont(set)
-            elif "labelSize" in opt:
-                axis.SetLabelSize(set)
-            elif "labelFont" in opt:
-                axis.SetLabelFont(set)
-            elif "n_div" in opt:
-                if len(set) != 2:
-                    log.error("n_div option in wrong format, need two items")
-                self.basis.th.SetNdivisions(set[0], set[1])
-            else:
-                log.error(f"Unknown option {opt}")
-                raise RuntimeError
+    def update_style(self, opt: str, set: Any) -> None:
+        """Update an option.
+
+        Arguments:
+            opt (``str``): option name
+            set (``Any``): option value
+        """
+        if self.basis is None:
+            log.error("Called pad style but no basis yet!")
+            raise RuntimeError
+
+        if "x_" in opt:
+            axis = self.basis.th.GetXaxis()
+        else:
+            axis = self.basis.th.GetYaxis()
+
+        if "titleOffset" in opt:
+            axis.SetTitleOffset(set)
+        elif "titleSize" in opt:
+            axis.SetTitleSize(set)
+        elif "titleFont" in opt:
+            axis.SetTitleFont(set)
+        elif "labelSize" in opt:
+            axis.SetLabelSize(set)
+        elif "labelFont" in opt:
+            axis.SetLabelFont(set)
+        elif "n_div" in opt:
+            if len(set) != 2:
+                log.error("n_div option in wrong format, need two items")
+                if self.basis.isTH1:
+                    self.basis.th.SetNdivisions(set[0], set[1])
+        else:
+            log.error(f"Unknown option {opt}")
+            raise RuntimeError

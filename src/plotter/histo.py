@@ -45,6 +45,9 @@ class histo:
         if drawOption != "":
             self.drawOption = drawOption
 
+        self.isTH1 = th.InheritsFrom("TH1")
+        self.isTGraph = th.InheritsFrom("TGraph")
+
     def apply_all_style(self):
         self.th.SetTitle(self.title)
         self.set_lineColor(self.lineColor)
@@ -63,6 +66,9 @@ class histo:
         """Sets line color"""
         self.lineColor = lineColor
         self.th.SetLineColor(lineColor)
+        # Is there situation where we want line and marker
+        # to have a different color?
+        self.th.SetMarkerColor(lineColor)
 
     def draw(self, suffix: str = "", drawOption: Optional[str] = None) -> None:
         """TH1.Draw wrapper,
@@ -106,7 +112,11 @@ class histo:
             fillToLine (``bool``): switch from fill to line
         """
         th = self.th.Clone(suffix)
-        thHelper.divide_ratio(th, otherHisto.th)
+        # TODO: histo of different type?
+        if self.isTH1:
+            thHelper.divide_ratio(th, otherHisto.th)
+        elif self.isTGraph:
+            thHelper.divide_ratio_graph(th, otherHisto.th)
 
         # switch colors if requested
         fillColor = None if fillToLine else self.fillColor

@@ -103,7 +103,11 @@ class collection:
             return None
 
         if norm is not None and norm.toOne:
-            collTH.Scale(1./collTH.Integral())
+            if collTH.Integral() == 0:
+                log.warning(f"Histogram {histoName} from collection {self.title} has integral 0.")
+                log.warning("Cannot normalize to one!")
+            else:
+                collTH.Scale(1./collTH.Integral())
 
         return collTH
 
