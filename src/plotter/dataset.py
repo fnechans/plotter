@@ -1,5 +1,6 @@
 from ROOT import TFile, TH1, TTree
 from typing import Optional, Union
+import os
 
 import logging
 log = logging.getLogger(__name__)
@@ -38,7 +39,8 @@ class dataset:
             lumi (``float``): luminosity of the sample
         """
         self.name = title
-        self.path = path
+        # create absolute path in case context changes
+        self.path = os.path.abspath(path)
         self.XS = XS
         self.lumi = lumi
 

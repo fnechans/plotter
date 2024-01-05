@@ -2,7 +2,7 @@ import ROOT
 from ROOT import TH1
 from . import thHelper
 from . import loader
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List, Union
 
 import logging
 log = logging.getLogger(__name__)
@@ -33,19 +33,19 @@ class histo:
         self.title = title
         self.lineColor = lineColor
         self.fillColor = fillColor
-
-        th.SetTitle(title)
-        self.set_lineColor(lineColor)
-        if fillColor is not None:
-            self.set_fillColor(fillColor)
-
-        self.config: Dict[str, Any] = {}
-        self.drawOption = ""
-        if configPath != "":
-            self.config = loader.load_config(configPath)
-            self.style_histo(self.config)
+        self.config = loader.load_config(configPath) if configPath != "" else {} 
+        self.apply_all_style()
         if drawOption!= "":
             self.drawOption = drawOption
+
+    def apply_all_style(self):
+        self.th.SetTitle(self.title)
+        self.set_lineColor(self.lineColor)
+        if self.fillColor is not None:
+            self.set_fillColor(self.fillColor)
+
+        if self.config != "":
+            self.style_histo(self.config)
 
     def set_fillColor(self, fillColor: int):
         """ Sets fill color """
@@ -113,7 +113,7 @@ class histo:
                      fillColor=fillColor, drawOption=self.drawOption)
 
     def style_histo(self, style: Dict[str, Any]) -> None:
-        """ Applies style to the histo
+        """Applies style to the histo
 
         Arguments:
             style (``Dict[str, Any]``): style config
@@ -133,3 +133,20 @@ class histo:
             else:
                 log.error(f"Unknown option {opt}")
                 raise RuntimeError
+
+    def rebin(self, binning: Union[int, List[float]] = []):
+        """Rebins histogram either based on nbin or binning.
+
+        If variable is int then just merges given number of bins (so TH1::Rebin),
+        otherwise assume binning is list and creates new histogram with that binning.
+
+        Arguments:
+            binning (``Union[int, List[float]]``): binning used in the new histogram
+        """
+        
+        if isinstance(binning, int): 
+            self.th.Rebin(binning)
+            return
+        
+        self.th = thHelper.rebin(self.th, binning, False)
+        self.apply_all_style()

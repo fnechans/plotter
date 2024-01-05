@@ -14,7 +14,8 @@ class pad:
 
     def __init__(self, name: str, xl: float = 0, xh: float = 1,
                  yl: float = 0, yh: float = 1, isTH1: bool = True,
-                 configPath: str = loader.path()+"configs/pad.json") -> None:
+                 configPath: str = loader.path()+"configs/pad.json",
+                 autoY = True) -> None:
         """
         Arguments:
             name (``str``): name of the pad
@@ -43,6 +44,7 @@ class pad:
         self.yTitle = ""
 
         self.yMin = 0.
+        self.yMinZero = 0. # for log, minimum >0
         self.yMax = 1.
         self.xMin = 0.
         self.xMax = 1.
@@ -51,6 +53,7 @@ class pad:
         # if user specifies y-range, we do not want to derive it automatically
         self.customYrange = False
         self.customXrange = False
+        self.autoY = autoY
 
         self.basis: Optional[histo] = None
 
@@ -102,7 +105,7 @@ class pad:
         self.isLogY = doLog
 
         if self.basis is not None:
-            if not self.customYrange:
+            if not self.customYrange and self.autoY:
                 self._set_basis_yrange(margin=1.5)
             else:
                 self._set_basis_yrange(margin=1)
@@ -135,11 +138,14 @@ class pad:
         # if custom range defined, skip the automatic derivation
         if not self.customYrange and self.isTH1:
             if self.histos == []:
-                self.yMin = h.th.GetMinimum(0)
+                self.yMin = h.th.GetMinimum()
+                self.yMinZero = h.th.GetMinimum(0)
                 self.yMax = h.th.GetMaximum()
             else:
-                if self.yMin > h.th.GetMinimum(0):
-                    self.yMin = h.th.GetMinimum(0)
+                if self.yMin > h.th.GetMinimum():
+                    self.yMin = h.th.GetMinimum()
+                if self.yMinZero > h.th.GetMinimum(0):
+                    self.yMinZero = h.th.GetMinimum(0)
                 if self.yMax < h.th.GetMaximum():
                     self.yMax = h.th.GetMaximum()
 
@@ -169,7 +175,7 @@ class pad:
 
         if self.customYrange:
             self._set_basis_yrange(margin=1)
-        elif self.isTH1:
+        elif self.isTH1 and self.autoY:
             self._set_basis_yrange(margin=1.5)
         if self.customXrange or self.isTH1:
             self._set_basis_xrange()
@@ -221,14 +227,17 @@ class pad:
         # for log it is little bit more complicated
         # but this usually ends up looking nice
         else:
-            if self.yMin == 0 or self.yMax == 0:
-                log.warning("Histograms y max/min=0, probably empty")
+            # Cannot do log if all values negative 
+            if self.yMax < 0:
+                log.warning("Histogram has only negative values, cannot do log!")
+            if self.yMax == 0:
+                log.warning("Histogram max is 0, cannot do log!")
             else:
                 fPlot = 1./margin  # plot takes 1/margin of the plot vertically
                 fBot = 0.02  # little bit space on the bottom
                 fLeg = 1-fPlot-0.02  # legend takes most of therest
-                yMinLog = pow(self.yMin, (fPlot+fBot)/fPlot)/pow(self.yMax, fBot/fPlot)
-                yMaxLog = pow(self.yMax, (1.-fBot)/fPlot)/pow(self.yMin, fLeg/fPlot)
+                yMinLog = pow(self.yMinZero, (fPlot+fBot)/fPlot)/pow(self.yMax, fBot/fPlot)
+                yMaxLog = pow(self.yMax, (1.-fBot)/fPlot)/pow(self.yMinZero, fLeg/fPlot)
                 self.basis.th.GetYaxis().SetRangeUser(yMinLog, yMaxLog)
 
     def set_yrange(self, yMin: float = 0, yMax: float = 1) -> None:
@@ -242,7 +251,7 @@ class pad:
         self.yMax = yMax
         self.customYrange = True
 
-        if self.basis is not None:
+        if self.basis is not None and self.autoY:
             self._set_basis_yrange()
 
     def _set_basis_xrange(self) -> None:

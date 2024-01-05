@@ -14,10 +14,12 @@ log = logging.getLogger(__name__)
 
 class simple:
     def __init__(self, plotName: str = "", xTitle: str = "",
-                 yTitle: str = "Events", isTH1: bool = True):
+                 yTitle: str = "Events", isTH1: bool = True,
+                 autoY = True):
         self.canvas = canvas(plotName)
 
-        self.mainPad = pad("main", configPath=loader.path()+"configs/pad.json", isTH1=isTH1)
+        self.mainPad = pad("main", configPath=loader.path()+"configs/pad.json",
+                           isTH1=isTH1, autoY=autoY)
         self.canvas.add_pad(self.mainPad)
         self.mainPad.set_title(xTitle, yTitle)
 
@@ -31,6 +33,9 @@ class simple:
 
         self.mainPad.add_histos(self.hs)
         self.mainPad.plot_histos()
+
+    def logx(self, doLog=True):
+        self.mainPad.logx(doLog)
 
     def set_xrange(self, min, max):
         self.mainPad.set_xrange(min, max)
@@ -115,12 +120,14 @@ class dataMC:
 
         if self.hShapes != []:
             self.hErr = self.hData.get_ratio(self.hData)
+            self.hErr.title = "Data Stat. Unc."
             self.hRatio = self.hMCs[0].get_ratio(self.hData, fillToLine=True)
             self.hRatioShapes = [h.get_ratio(self.hData) for h in self.hShapes]
             self.ratioPad.add_histos([self.hErr, self.hRatio])
             self.ratioPad.add_histos(self.hRatioShapes)
         else:
             self.hErr = self.hMCs[0].get_ratio(self.hMCs[0])
+            self.hErr.title = "MC Stat. Unc."
             self.hRatio = hData.get_ratio(self.hMCs[0], fillToLine=True)
             self.ratioPad.add_histos([self.hErr, self.hRatio])
 
@@ -145,6 +152,7 @@ class dataMC:
         self.leg = legend()
         self.leg.add_histo(self.hData)
         self.leg.add_histos(self.hMCs)
+        self.leg.add_histo(self.hErr)
         if self.hShapes != []:
             self.leg.add_histos(self.hShapes)
         self.leg.create_and_draw()
@@ -237,8 +245,8 @@ class Comparison:
         self.histos = histos
 
         if self.nonEmpty:
-            xMin = 0.
-            xMax = 0.
+            xMin = histos[0].th.GetBinLowEdge(1)
+            xMax = histos[0].th.GetBinLowEdge(histos[0].th.GetNbinsX()+1)
             prevCont = False
             minDone = False
             maxDone = False

@@ -111,5 +111,14 @@ def get_lumi() -> Dict[str, float]:
   luminosity["mc16e"] = 58450.1
   return luminosity
 
+def get_year2campaign() -> Dict[str, str]:
+  year2campaign = {
+    "": "", # all years = all campaigns
+    "1516": ".mc16a",
+    "17": ".mc16d",
+    "18": ".mc16e",
+  }
+  return year2campaign
+
 def recommended_colors():
   return [ROOT.kBlack, ROOT.kGreen, ROOT.kGreen + 2, ROOT.kRed,ROOT.kRed + 2, ROOT.kOrange, ROOT.kOrange + 2, ROOT.kBlue, ROOT.kBlue + 2, ROOT.kViolet, ROOT.kViolet + 2, ROOT.kPink, ROOT.kPink + 2]
