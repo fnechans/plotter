@@ -1,17 +1,18 @@
 from typing import List, Dict
 
 import logging
+
 log = logging.getLogger(__name__)
 
 
 class _xs:
     def __init__(self) -> None:
-        self.XS = 1.
-        self.kFactor = 1.
-        self.filtEff = 1.
+        self.XS = 1.0
+        self.kFactor = 1.0
+        self.filtEff = 1.0
 
     def get_xs(self):
-        return self.XS*self.kFactor*self.filtEff
+        return self.XS * self.kFactor * self.filtEff
 
 
 class xsReader:
@@ -22,13 +23,13 @@ class xsReader:
         for filePath in filePaths:
             self.add_file(filePath)
 
+    @staticmethod
     def string2float(string: str) -> float:
         new_str = string.strip()
         if new_str == "NULL":
             log.warning("String is `NULL`, returning 1!")
             return 1
         return float(new_str)
-
 
     def add_file(self, filePath: str) -> None:
         with open(filePath, "r") as xsFile:
