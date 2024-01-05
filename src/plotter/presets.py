@@ -137,25 +137,28 @@ class dataMC:
 
     def remove_empty(self):
         xMin = self.hData.th.GetBinLowEdge(1)
-        xMax = self.hData.th.GetBinLowEdge(self.hData.th.GetNbinsX()+1)
+        xMax = self.hData.th.GetBinLowEdge(self.hData.th.GetNbinsX() + 1)
         prevCont = False
         minDone = False
         maxDone = False
         for i in range(self.hData.th.GetNbinsX()):
-            iBin = i+1
-            if self.hData.th.GetBinContent(iBin) != 0 or self.hMCs[0].th.GetBinContent(iBin) != 0:
+            iBin = i + 1
+            if (
+                self.hData.th.GetBinContent(iBin) != 0
+                or self.hMCs[0].th.GetBinContent(iBin) != 0
+            ):
                 minDone = True
                 prevCont = True
                 continue
 
             if not minDone:
-                xMin = self.hData.th.GetBinLowEdge(iBin+1)
+                xMin = self.hData.th.GetBinLowEdge(iBin + 1)
             if prevCont:
                 xMax = self.hData.th.GetBinLowEdge(iBin)
                 maxDone = True
             prevCont = False
         if not maxDone:
-            xMax = self.hData.th.GetBinLowEdge(self.hData.th.GetNbinsX()+1)
+            xMax = self.hData.th.GetBinLowEdge(self.hData.th.GetNbinsX() + 1)
         self.mainPad.set_xrange(xMin, xMax)
         self.ratioPad.set_xrange(xMin, xMax)
 
@@ -242,7 +245,8 @@ class Comparison:
         yTitle: str = "Events",
         ratioTitle: str = "Ratio",
         fraction: float = 0.3,
-        nonEmpty: bool = True):
+        nonEmpty: bool = True,
+    ):
         self.canvas = canvas(plotName)
 
         self.mainPad = pad(

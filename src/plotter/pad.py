@@ -68,7 +68,7 @@ class pad:
         self.basis: Optional[histo] = None
 
     def reset_histos(self) -> None:
-        """ Removes all histograms but keeps all non-histo settings"""
+        """Removes all histograms but keeps all non-histo settings"""
         self.histos = []
         self.customXrange = False
         self.customYrange = False
@@ -162,7 +162,7 @@ class pad:
 
         if self.histos == []:
             self.yMin = h.th.GetMinimum()
-                self.yMinZero = h.th.GetMinimum(0)
+            self.yMinZero = h.th.GetMinimum(0)
             self.yMax = h.th.GetMaximum()
         else:
             if self.yMin > h.th.GetMinimum():
@@ -207,17 +207,21 @@ class pad:
         # histograms
         # TODO: add histo.clone??
         if self.histos[0].isTGraph:
-            self.basis = histo("", self.histos[0].th.Clone("basis").GetHistogram(),
-                               lineColor=ROOT.kWhite, fillColor=ROOT.kWhite,
-                               drawOption="hist")
+            self.basis = histo(
+                "",
+                self.histos[0].th.Clone("basis").GetHistogram(),
+                lineColor=ROOT.kWhite,
+                fillColor=ROOT.kWhite,
+                drawOption="hist",
+            )
         else:
             self.basis = histo(
-            "",
-            self.histos[0].th.Clone("basis"),
+                "",
+                self.histos[0].th.Clone("basis"),
                 lineColor=ROOT.kWhite,
-            fillColor=ROOT.kWhite,
+                fillColor=ROOT.kWhite,
                 drawOption="hist",
-        )
+            )
         self.basis.th.Reset()
         self._set_basis_axis_title()
 
@@ -378,24 +382,42 @@ class pad:
 
         if "x_" in opt:
             axis = self.basis.th.GetXaxis()
-        else:
+            update_style_axis(axis, opt, set)
+        elif "y_" in opt:
             axis = self.basis.th.GetYaxis()
-
-        if "titleOffset" in opt:
-            axis.SetTitleOffset(set)
-        elif "titleSize" in opt:
-            axis.SetTitleSize(set)
-        elif "titleFont" in opt:
-            axis.SetTitleFont(set)
-        elif "labelSize" in opt:
-            axis.SetLabelSize(set)
-        elif "labelFont" in opt:
-            axis.SetLabelFont(set)
+            update_style_axis(axis, opt, set)
         elif "n_div" in opt:
             if len(set) != 2:
                 log.error("n_div option in wrong format, need two items")
-                if self.basis.isTH1:
-                    self.basis.th.SetNdivisions(set[0], set[1])
+                raise RuntimeError
+            if self.basis.isTH1:
+                self.basis.th.SetNdivisions(set[0], set[1])
         else:
             log.error(f"Unknown option {opt}")
             raise RuntimeError
+
+
+# STYLE HELPERS
+
+
+def update_style_axis(axis, opt, set):
+    """Update style of an axis
+
+    Arguments:
+        axis (``TAxis``): axis to update
+        opt (``str``): option name
+        set (``Any``): option value
+    """
+    if "titleOffset" in opt:
+        axis.SetTitleOffset(set)
+    elif "titleSize" in opt:
+        axis.SetTitleSize(set)
+    elif "titleFont" in opt:
+        axis.SetTitleFont(set)
+    elif "labelSize" in opt:
+        axis.SetLabelSize(set)
+    elif "labelFont" in opt:
+        axis.SetLabelFont(set)
+    else:
+        log.error(f"Unknown option {opt}")
+        raise RuntimeError
