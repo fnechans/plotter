@@ -135,7 +135,7 @@ def get_year2campaign() -> Dict[str, str]:
     """Returns dict per mc campaign which
     maps year to campaign."""
     year2campaign = {
-        "": "",  # all years = all campaigns
+        "Run2": "",  # all years = all campaigns
         "1516": ".mc16a",
         "17": ".mc16d",
         "18": ".mc16e",
