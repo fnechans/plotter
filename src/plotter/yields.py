@@ -7,7 +7,7 @@ def print_yields_tex(title, hdata, hlistMC, ystr):
     hst_data = hdata.th
     entries = hst_data.GetEntries()
     err_entries = entries**0.5
-    integral = hst_data.Integral()+hst_data.GetBinContent(0)+hst_data.GetBinContent(hst_data.GetNbinsX()+1)
+    integral = hst_data.Integral(0,hst_data.GetNbinsX()+1)
     err_entries = pdgRounding.pdgRoundData(integral, err_entries) #not rounding data integral
 
     s2 = str(hdata.title)+"&"+str(entries)+"&"+str(integral)+"&"+str(err_entries)+"&NA\\\\\n"
@@ -19,7 +19,7 @@ def print_yields_tex(title, hdata, hlistMC, ystr):
             frac_err_entries = 0
         else:
             frac_err_entries = (entries**0.5)/entries #fractional error
-        integral = hMC.Integral()+hMC.GetBinContent(0)+hMC.GetBinContent(hMC.GetNbinsX()+1)
+        integral = hMC.Integral(0,hMC.GetNbinsX()+1)
         err_entries = frac_err_entries*integral
         integral, err_entries = pdgRounding.pdgRound(integral, err_entries)
 
