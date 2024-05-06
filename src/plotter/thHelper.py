@@ -149,6 +149,7 @@ def get_graph_maximum(g: TGraph) -> float:
         return -1111
     return max(g.GetY())
 
+
 def get_th1_error_as_hist(th1: TH1):
     """Get error of the TH1 as two TH1s for up and down error
 

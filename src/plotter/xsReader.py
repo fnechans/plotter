@@ -29,7 +29,7 @@ class xsReader:
             self.add_file(filePath)
 
     @staticmethod
-    def string2float(msg: str, string: str)-> float:
+    def string2float(msg: str, string: str) -> float:
         new_str = string.strip()
         if new_str == "NULL":
             log.warning(f"{msg}String is `NULL`, returning 1!")
