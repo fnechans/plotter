@@ -8,7 +8,7 @@ def print_yields_tex(title, hdata, hlistMC, ystr):
         + "for \\resizebox\n\\begin{document}\n\\begin{table}[htbp]\n\\centering\n\\caption{"
         + title
         + "}\n\\resizebox{\\textwidth}{!}{%\n\\begin{tabular}{|c|c|c|c|c|}\n\\hline\nProcess "
-        + "& N\_Entries & Yield & Statistical unc. & Systematic unc.\\\\\n\\hline\n"
+        + "& N\\_Entries & Yield & Statistical unc. & Systematic unc.\\\\\n\\hline\n"
     )
     hst_data = hdata.th
     entries = hst_data.GetEntries()
@@ -45,7 +45,7 @@ def print_yields_tex(title, hdata, hlistMC, ystr):
     s4 = (
         "\\hline\n\\end{tabular}%\n}\\label{tab:"
         + title
-        + "_yields_table}\n\\end{table}\n\\end{document}"
+        + "}\n\\end{table}\n\\end{document}"
     )
 
     ystr = s1 + s2 + s3 + s4
