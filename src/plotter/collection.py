@@ -55,6 +55,9 @@ class collection:
 
         # list of samples in the collection
         self.datasets: List[dataset] = []
+        
+    def __len__(self):
+        return len(self.dataset)
 
     def add_dataset(self, ds: dataset) -> None:
         """ Adds dataset to the collection."""
@@ -63,6 +66,9 @@ class collection:
     def add_collection(self, coll: "collection") -> None:
         """ Adds all datasets from another collection."""
         self.datasets.extend(coll.datasets)
+        
+    def get_datasets(self) -> List[dataset]:
+        return self.datasets
 
     def get_th(self, histoName: str, norm: Optional[normalizationHelper] = None, skipBad: bool = False) -> Optional[TH1]:
         """ Gets histograms from all datasets
@@ -114,6 +120,7 @@ class collection:
     def norm_ds(self, th: TH1, ds: dataset, norm: normalizationHelper):
         """ Normalizes histogram from a dataset
         """
+    
         if norm.byXS:
             th.Scale(ds.XS)
         if norm.bySoW:
@@ -123,3 +130,65 @@ class collection:
             th.Scale(1./ds.get_sumOfWeights(self.sow))
         if norm.byLumi:
             th.Scale(ds.lumi)
+
+
+class CollectionContainer:
+    """ Manages a set of collections"""
+    
+    def __init__(self):
+        self.collections: Dict[str, collection] = {}
+    
+    def __getitem__(self, index) -> collection:
+        return self.collections[index]
+        
+    def add_dataset(self, ds: dataset) -> None:
+        
+        col = collection(ds.name)
+        col.add_dataset(ds)
+                
+        self.add_collection(ds.name, col)
+        
+    def add_collection(self, col_name, col: collection) -> None:
+        
+        if col_name in self.collections.keys():
+            col_old = self.collections[col_name]
+            if len(col_old) > 0:
+                log.error(f"Collection {col_name} already exists in collections, keeping old!")
+            
+            if len(col_old) == 1:
+                log.debug(f"Old collection is a dataset: {col_old.datasets[0].path}")
+            
+            if len(col) == 1:
+                log.debug(f"New collection is a dataset : {col.datasets[0].path}")
+            return 
+                    
+        self.collections[col_name] = col
+        
+    def add_collections_by_name(self, col_name: str, col_title, components: List, 
+                                sow: Optional[sumOfWeightHelper] = None) -> None:
+        
+        if col_name in self.collections.keys():
+            log.fatal(f"Collection {col_name} already exist")
+            raise RuntimeError
+            
+        
+        datasets = []
+        for name in components:
+            if not name in self.collections.keys():
+                log.warning(f"Cannot add collection {name} to a collection {col_name}.")
+                continue
+            datasets.extend(self.collections[name].get_datasets())
+        
+        if len(datasets):
+            col = collection(col_title, sow)
+            for dataset in datasets:
+                col.add_dataset(dataset)
+            
+            self.add_collection(col_name, col)
+    
+        
+        
+        
+        
+    
+    
