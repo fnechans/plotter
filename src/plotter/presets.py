@@ -64,12 +64,12 @@ class dataMC:
         yTitle: str = "Events",
         ratioTitle: str = "Ratio",
         fraction: float = 0.3,
-        ratio_limits = (0.701, 1.299),
-        nonEmpty = True
+        ratio_limits=(0.701, 1.299),
+        nonEmpty=True,
     ):
         self.custom_xrange = False
         self.nonEmpty = nonEmpty
-                
+
         self.canvas = canvas(plotName)
 
         self.mainPad = pad(
@@ -86,11 +86,9 @@ class dataMC:
         if ratio_limits is not None:
             low, high = ratio_limits
             self.ratioPad.set_yrange(low, high)
-          
+
         self.ratioPad.margins(up=0)
         self.ratioPad.set_title(xTitle, ratioTitle)
-
-
 
     def add_and_plot(
         self, hData: histo, _hMCs: List[histo], _hShapes: List[histo] = []
@@ -100,7 +98,6 @@ class dataMC:
             log.error("List of MC histograms is empty")
             raise RuntimeError
 
-        
         self.hData = hData
 
         # stack the MC
@@ -113,10 +110,10 @@ class dataMC:
             hMC.th = _hMC.th.Clone("stack")
             for hOther in self.hMCs:
                 hOther.th.Add(hMC.th)
-            self.hMCs.append(hMC)   
+            self.hMCs.append(hMC)
 
         self.mainPad.add_histos(self.hMCs)
-        
+
         self.hShapes = _hShapes
         if self.hShapes != []:
             self.mainPad.add_histos(self.hShapes)
@@ -141,24 +138,23 @@ class dataMC:
         # TODO: custom config
         cfgErr = loader.load_config(loader.path() + "configs/err.json")
         self.hErr.style_histo(cfgErr)
-        
+
         self.ratioPad.plot_histos()
 
         self.update_ranges()
-    
- #       self.ratioPad.update_range()
- 
+
+    #       self.ratioPad.update_range()
+
     def update_ranges(self):
-        
+
         if self.nonEmpty and not self.custom_xrange:
             (xmin, xmax) = self._xrange_emptysupressed()
 
         self.mainPad.update_range()
-        self.ratioPad.update_range()          
-           
+        self.ratioPad.update_range()
 
     def _xrange_emptysupressed(self):
-        """ Determine x range containing nonzero """ # TODO REVIEW
+        """Determine x range containing nonzero"""  # TODO REVIEW
         xMin = self.hData.th.GetBinLowEdge(1)
         xMax = self.hData.th.GetBinLowEdge(self.hData.th.GetNbinsX() + 1)
         prevCont = False
@@ -182,9 +178,9 @@ class dataMC:
             prevCont = False
         if not maxDone:
             xMax = self.hData.th.GetBinLowEdge(self.hData.th.GetNbinsX() + 1)
-        
+
         return (xMin, xMax)
-    
+
     def set_xrange(self, min, max):
         self.custom_xrange = True
         self.mainPad.set_xrange(min, max)
@@ -194,7 +190,7 @@ class dataMC:
         self.mainPad.logx(doLog)
         self.ratioPad.logx(doLog)
 
-    def save(self, plotName: str, verbose = False):
+    def save(self, plotName: str, verbose=False):
         self.canvas.tcan.cd()
         self.leg = legend()
         self.leg.add_histo(self.hData)
