@@ -50,8 +50,8 @@ class pad:
         self.isTH1 = isTH1
 
         self.histos: List[histo] = []
-        self.xTitle: str = None
-        self.yTitle: str = None
+        self.xTitle: Optional[str] = None
+        self.yTitle: Optional[str] = None
 
         self.yMin = 0.0
         self.yMinZero = 0.0  # for log, minimum >0
