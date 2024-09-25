@@ -143,12 +143,12 @@ class dataMC:
 
         self.update_ranges()
 
-    #       self.ratioPad.update_range()
-
     def update_ranges(self):
 
         if self.nonEmpty and not self.custom_xrange:
             (xmin, xmax) = self._xrange_emptysupressed()
+            self.mainPad.set_xrange(xmin, xmax)
+            self.ratioPad.set_xrange(xmin, xmax)
 
         self.mainPad.update_range()
         self.ratioPad.update_range()

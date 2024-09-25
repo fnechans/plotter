@@ -326,12 +326,12 @@ class pad:
             self._set_basis_yrange()
 
     def _set_basis_xrange(self) -> None:
+        """Sets rangeof the x-axis through the basis histogram"""
 
         # only for setting both limits at the time for now TODO
         if not self.xMin and not self.xMax:
             return
 
-        """Sets rangeof the x-axis through the basis histogram"""
         if self.basis is None:
             log.error("Called basis function but no basis yet!")
             raise RuntimeError
