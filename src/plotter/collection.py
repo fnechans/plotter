@@ -1,4 +1,4 @@
-from typing import Optional, List
+from typing import Optional, List, Dict
 from ROOT import TH1
 from .dataset import dataset, sumOfWeightHelper
 
@@ -142,6 +142,7 @@ class CollectionContainer:
         return self.collections[index]
         
     def add_dataset(self, ds: dataset) -> None:
+        """Add dataset and create a correponsing collection in the librarly"""
         
         col = collection(ds.name)
         col.add_dataset(ds)
@@ -149,6 +150,7 @@ class CollectionContainer:
         self.add_collection(ds.name, col)
         
     def add_collection(self, col_name, col: collection) -> None:
+        """Add collection to the librarly"""
         
         if col_name in self.collections.keys():
             col_old = self.collections[col_name]
@@ -166,6 +168,7 @@ class CollectionContainer:
         
     def add_collections_by_name(self, col_name: str, col_title, components: List, 
                                 sow: Optional[sumOfWeightHelper] = None) -> None:
+        """Add collection by specifying their name. Internally the function will check if corresponding dataset exist"""
         
         if col_name in self.collections.keys():
             log.fatal(f"Collection {col_name} already exist")
