@@ -142,22 +142,22 @@ class pad:
         """
         self._update_range(h)
         self.histos.append(h)
-        
+
     def update_range(self) -> None:
-        
+
         for h in self.histos:
             self._update_range(h)
-            
+
     def _update_range(self, h: histo) -> None:
-        
+
         if h.isTH1:
             self._update_range_th1(h)
         elif h.isTGraph:
             self._update_range_tgraph(h)
 
-                     
-
-    def _update_range_th1(self, h: histo) -> None:   # TODO this function needs to take the xmin, xmax range into account!
+    def _update_range_th1(
+        self, h: histo
+    ) -> None:  # TODO this function needs to take the xmin, xmax range into account!
         """Updates yMin/yMax if applicable for TH1"""
 
         if not self.customXrange:
@@ -263,7 +263,9 @@ class pad:
         if self.yTitle:
             self.basis.th.GetYaxis().SetTitle(self.yTitle)
 
-    def set_title(self, xTitle: Optional[str] = None, yTitle: Optional[str] = None) -> None:
+    def set_title(
+        self, xTitle: Optional[str] = None, yTitle: Optional[str] = None
+    ) -> None:
         """Saves the axis titles, applies to the basis if already exists
 
         Arguments:
@@ -276,7 +278,7 @@ class pad:
         if self.basis is not None:
             self._set_basis_axis_title()
 
-    def _set_basis_yrange(self, margin: float = 1.) -> None:
+    def _set_basis_yrange(self, margin: float = 1.0) -> None:
         """Sets rangeof the y-axis through the basis histogram"""
         if self.basis is None:
             log.error("Called basis function but no basis yet!")
@@ -297,7 +299,9 @@ class pad:
                 log.warning("Histogram max is 0, cannot do log!")
             else:
                 fBot = 0.01  # little bit space on the bottom
-                fPlot = 1.0 / margin - fBot  # plot takes 1/margin of the plot vertically
+                fPlot = (
+                    1.0 / margin - fBot
+                )  # plot takes 1/margin of the plot vertically
                 fLeg = 1.0 - fPlot  # legend takes most of therest
                 yMinLog = pow(self.yMinZero, (fPlot + fBot) / fPlot) / pow(
                     self.yMax, fBot / fPlot
@@ -322,11 +326,11 @@ class pad:
             self._set_basis_yrange()
 
     def _set_basis_xrange(self) -> None:
-        
+
         # only for setting both limits at the time for now TODO
-        if(not self.xMin and not self.xMax):
+        if not self.xMin and not self.xMax:
             return
-        
+
         """Sets rangeof the x-axis through the basis histogram"""
         if self.basis is None:
             log.error("Called basis function but no basis yet!")

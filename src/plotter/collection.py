@@ -192,7 +192,7 @@ class CollectionContainer:
 
         datasets = []
         for name in components:
-            if not name in self.collections.keys():
+            if name not in self.collections.keys():
                 log.warning(
                     f"Collection {name} does not exist, cannot be added a collection {col_name}."
                 )
@@ -201,7 +201,7 @@ class CollectionContainer:
 
         if len(datasets):
             col = collection(col_title, sow)
-            for dataset in datasets:
-                col.add_dataset(dataset)
+            for ds in datasets:
+                col.add_dataset(ds)
 
             self.add_collection(col_name, col)
