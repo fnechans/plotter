@@ -8,7 +8,6 @@ log = logging.getLogger(__name__)
 
 ROOT.gROOT.SetBatch(True)
 
-
 def SetAtlasStyle():
     """Sets custom ATLAS style, it is mostly based
     on the official one but contains some custom fixes
@@ -21,7 +20,6 @@ def SetAtlasStyle():
     ROOT.gROOT.SetStyle("ATL2")
     ROOT.gROOT.ForceStyle()
 #  return atlasStyle
-
 
 def AtlasStyle():
     atlasStyle = TStyle("ATL2", "Atlas style")
@@ -120,14 +118,13 @@ def ATLASLabel(x: float = 0.22, y: float = 0.9, text: str = "",
         p.SetTextColor(color)
         p.DrawLatex(x + delx, y, text)
 
-
-def get_lumi() -> Dict[str, float]:
+def get_lumi() -> Dict[str, float]:  
     """Returns luminosity for each year in the format
     of dict per mc campaign."""
     luminosity = {}
-    luminosity["mc16a"] = 32988.1 + 3219.56
-    luminosity["mc16d"] = 44307.4
-    luminosity["mc16e"] = 58450.1
+    luminosity["mc16a"] = 33402 + 3244.54
+    luminosity["mc16d"] = 44630.6
+    luminosity["mc16e"] = 58791.6
     return luminosity
 
 
@@ -140,8 +137,8 @@ def get_year2campaign() -> Dict[str, str]:
         "17": ".mc16d",
         "18": ".mc16e",
     }
-    return year2campaign
 
+    return year2campaign 
 
 def recommended_colors():
     """Some recommended ROOT colors

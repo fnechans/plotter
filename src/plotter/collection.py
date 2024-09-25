@@ -175,7 +175,7 @@ class CollectionContainer:
         datasets = []
         for name in components:
             if not name in self.collections.keys():
-                log.warning(f"Cannot add collection {name} to a collection {col_name}.")
+                log.warning(f"Collection {name} does not exist, cannot be added a collection {col_name}.")
                 continue
             datasets.extend(self.collections[name].get_datasets())
         

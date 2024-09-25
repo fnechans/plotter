@@ -91,7 +91,7 @@ class dataset:
                     raise RuntimeError
                 return False
             else:
-                log.info(f"Success opening file {self.path}")
+                log.debug(f"Success opening file {self.path}")
                 self.goodFile = True
                 return True
         else:

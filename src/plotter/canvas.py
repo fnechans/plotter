@@ -17,7 +17,7 @@ class canvas:
     (e.g. drawin pads)
     """
 
-    def __init__(self, name: str, x: int = 800, y: int = 800) -> None:
+    def __init__(self, name: str, width: int = 800, height: int = 800) -> None:
         """
         Arguments:
             name (``str``): name of canvas, used also as title
@@ -26,7 +26,7 @@ class canvas:
         """
 
         with Quiet(ROOT.kWarning + 1):
-            self.tcan = TCanvas(name, name, x, y)
+            self.tcan = TCanvas(name, name, width, height)
         # TODO: still not 100% convinced we need a Dict and not just List
         self.pads: Dict[str, pad] = {}
 

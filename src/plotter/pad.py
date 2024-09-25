@@ -50,8 +50,8 @@ class pad:
         self.isTH1 = isTH1
 
         self.histos: List[histo] = []
-        self.xTitle = ""
-        self.yTitle = ""
+        self.xTitle = None
+        self.yTitle = None
 
         self.yMin = 0.0
         self.yMinZero = 0.0  # for log, minimum >0
@@ -140,15 +140,24 @@ class pad:
         Arguments:
             h (``histo``): added histogram
         """
-
+        self._update_range(h)
+        self.histos.append(h)
+        
+    def update_range(self) -> None:
+        
+        for h in self.histos:
+            self._update_range(h)
+            
+    def _update_range(self, h: histo) -> None:
+        
         if h.isTH1:
             self._update_range_th1(h)
         elif h.isTGraph:
             self._update_range_tgraph(h)
 
-        self.histos.append(h)
+                     
 
-    def _update_range_th1(self, h: histo) -> None:
+    def _update_range_th1(self, h: histo) -> None:   # TODO this function needs to take the xmin, xmax range into account!
         """Updates yMin/yMax if applicable for TH1"""
 
         if not self.customXrange:
@@ -249,10 +258,12 @@ class pad:
             log.error("Called basis function but no basis yet!")
             raise RuntimeError
 
-        self.basis.th.GetXaxis().SetTitle(self.xTitle)
-        self.basis.th.GetYaxis().SetTitle(self.yTitle)
+        if self.xTitle:
+            self.basis.th.GetXaxis().SetTitle(self.xTitle)
+        if self.yTitle:
+            self.basis.th.GetYaxis().SetTitle(self.yTitle)
 
-    def set_title(self, xTitle: str = "", yTitle: str = "") -> None:
+    def set_title(self, xTitle: Optional[str] = None, yTitle: Optional[str] = None) -> None:
         """Saves the axis titles, applies to the basis if already exists
 
         Arguments:
@@ -311,6 +322,11 @@ class pad:
             self._set_basis_yrange()
 
     def _set_basis_xrange(self) -> None:
+        
+        # only for setting both limits at the time for now TODO
+        if(not self.xMin and not self.xMax):
+            return
+        
         """Sets rangeof the x-axis through the basis histogram"""
         if self.basis is None:
             log.error("Called basis function but no basis yet!")
