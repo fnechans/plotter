@@ -35,6 +35,18 @@ class normalizationHelper:
         self.byXS = normByXS
         self.bySoW = normBySoW
 
+def get_normalizationHelper(config):
+    
+    if config == 'none':
+        return normalizationHelper()
+    if config == 'events':
+        return normalizationHelper(normByLumi=True, normByXS=True, normBySoW=True)
+    if config == 'one':
+        return normalizationHelper(normToOne=True)
+    else:
+        raise RuntimeError('Unknown normalization config '+config)
+        
+
 
 class collection:
     """Manages collection of datasets
