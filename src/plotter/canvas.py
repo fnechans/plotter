@@ -46,7 +46,7 @@ class canvas:
         self.cd()
         p.tpad.Draw()
 
-    def save(self, path: str):
+    def save(self, path: str, verbose = False):
         """Calls SaveAs from TCanvas, creates dirs if necessary
 
         Arguments:
@@ -67,6 +67,8 @@ class canvas:
         oldIgnore = ROOT.gErrorIgnoreLevel
         ROOT.gErrorIgnoreLevel = 3000
         self.tcan.SaveAs(path)
+        if verbose:
+            print(path)
         ROOT.gErrorIgnoreLevel = oldIgnore
 
     def add_text(

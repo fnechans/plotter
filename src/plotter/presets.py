@@ -52,8 +52,8 @@ class simple:
     def set_yrange(self, min, max):
         self.mainPad.set_yrange(min, max)
 
-    def save(self, plotName: str):
-        self.canvas.save(plotName)
+    def save(self, plotName: str, verbose = False):
+        self.canvas.save(plotName, verbose)
 
 
 class dataMC:
@@ -130,11 +130,11 @@ class dataMC:
         else:
             self.hErr = self.hMCs[0].get_ratio(self.hMCs[0])
             self.hErr.title = "MC Stat. Unc."
-            self.hRatio = hData.get_ratio(self.hMCs[0], fillToLine=True)
+            print('DBG before ratio data linecolor', hData.linecolor)
+            self.hRatio = hData.get_ratio(self.hMCs[0], fillToLine=False)
             self.ratioPad.add_histos([self.hErr, self.hRatio])
 
-        self.hErr.set_fillColor(ROOT.kGray + 1)
-        self.hErr.set_lineColor(ROOT.kGray + 1)
+        self.hErr.color = ROOT.kGray + 1
         # TODO: custom config
         cfgErr = loader.load_config(loader.path() + "configs/err.json")
         self.hErr.style_histo(cfgErr)
@@ -327,8 +327,7 @@ class Comparison:
         self.mainPad.plot_histos()
 
         self.hErr = self.histos[0].get_ratio(self.histos[0])
-        self.hErr.set_fillColor(ROOT.kGray + 1)
-        self.hErr.set_lineColor(ROOT.kGray + 1)
+        self.hErr.color = ROOT.kGray + 1
         # TODO: custom config
         cfgErr = loader.load_config(loader.path() + "configs/err.json")
         self.hErr.style_histo(cfgErr)

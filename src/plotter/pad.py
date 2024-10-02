@@ -219,16 +219,16 @@ class pad:
             self.basis = histo(
                 "",
                 self.histos[0].th.Clone("basis").GetHistogram(),
-                lineColor=ROOT.kWhite,
-                fillColor=ROOT.kWhite,
+                linecolor=ROOT.kWhite,
+                fillcolor=ROOT.kWhite,
                 drawOption="hist",
             )
         else:
             self.basis = histo(
                 "",
                 self.histos[0].th.Clone("basis"),
-                lineColor=ROOT.kWhite,
-                fillColor=ROOT.kWhite,
+                linecolor=ROOT.kWhite,
+                fillcolor=ROOT.kWhite,
                 drawOption="hist",
             )
         self.basis.th.Reset()

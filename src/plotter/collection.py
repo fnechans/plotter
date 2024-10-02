@@ -192,7 +192,7 @@ class CollectionContainer:
     def add_collections_by_name(
         self,
         col_name: str,
-        col_title,
+        col_title: str,
         components: List,
         sow: Optional[sumOfWeightHelper] = None,
     ) -> None:
@@ -216,4 +216,5 @@ class CollectionContainer:
             for ds in datasets:
                 col.add_dataset(ds)
 
+            print('adding ',  col.title)
             self.add_collection(col_name, col)

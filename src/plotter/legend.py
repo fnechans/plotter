@@ -28,7 +28,7 @@ class legend:
 
     def add_histo(self, h: histo):
         """ Add histo to the legend """
-        if h.title != "SKIP_LEGEND":
+        if h.title != "SKIP_LEGEND":  #TODO IMPROVE BY USING DECORATOR
             self.histos.append(h)
 
     def add_histos(self, hs: List[histo]):
@@ -47,7 +47,7 @@ class legend:
         for h in self.histos:
             if "p" in h.drawOption:
                 self.tlegend.AddEntry(h.th, h.title, "p")
-            elif h.fillColor:
+            elif h.fillcolor:
                 self.tlegend.AddEntry(h.th, h.title, "f")
             else:
                 self.tlegend.AddEntry(h.th, h.title, "l")

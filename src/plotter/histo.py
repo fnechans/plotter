@@ -3,6 +3,7 @@ from ROOT import TH1
 from . import thHelper
 from . import loader
 from typing import Optional, Dict, Any, List, Union
+from plotter.plottingbase import Plottable
 
 import logging
 
@@ -11,7 +12,7 @@ log = logging.getLogger(__name__)
 ROOT.TH1.AddDirectory(False)
 
 
-class histo:
+class histo(Plottable):
     """Wrapper class around TH1, setups the main properties
     + contains few usefull function (e.g. divide_ratio)
 
@@ -24,22 +25,24 @@ class histo:
         self,
         title: str,
         th: TH1,
-        lineColor: int = ROOT.kBlack,
-        fillColor: Optional[int] = None,
+        linecolor: int = ROOT.kBlack,
+        fillcolor: Optional[int] = 0,
         drawOption: str = "",
         configPath: str = "",
     ) -> None:
         """
         Arguments:
             th (``TH1``): ROOT histogram
-            lineColor (``int``): color of the histogram line
-            fillColor (``int/None``): color of the histogram fill,
+            linecolor (``int``): color of the histogram line
+            fillcolor (``int/None``): color of the histogram fill,
                 can be None
         """
+
+        
         self.th = th
         self.title = title
-        self.lineColor = lineColor
-        self.fillColor = fillColor
+        self.linecolor = linecolor
+        self.fillcolor = fillcolor
         self.config = loader.load_config(configPath) if configPath != "" else {}
         self.apply_all_style()
         if drawOption != "":
@@ -47,28 +50,29 @@ class histo:
 
         self.isTH1 = th.InheritsFrom("TH1")
         self.isTGraph = th.InheritsFrom("TGraph")
+        
+        super().__init__()
 
     def apply_all_style(self):
+        print('dbgtit', self.title)
         self.th.SetTitle(self.title)
-        self.set_lineColor(self.lineColor)
-        if self.fillColor is not None:
-            self.set_fillColor(self.fillColor)
+ #       self.set_lineColor(self.linecolor)
+ #       if self.fillcolor is not None:
+ #           self.set_fillColor(self.fillcolor)
 
         if self.config != "":
             self.style_histo(self.config)
 
-    def set_fillColor(self, fillColor: int):
-        """Sets fill color"""
-        self.fillColor = fillColor
-        self.th.SetFillColor(fillColor)
+#    def set_fillColor(self, fillcolor: int):
+#        """Sets fill color"""
+#        self.th.SetFillColor(fillcolor)
 
-    def set_lineColor(self, lineColor: int):
-        """Sets line color"""
-        self.lineColor = lineColor
-        self.th.SetLineColor(lineColor)
-        # Is there situation where we want line and marker
-        # to have a different color?
-        self.th.SetMarkerColor(lineColor)
+#    def set_lineColor(self, linecolor: int):
+#        """Sets line color"""
+#        self.SetLineColor(linecolor)
+#        # Is there situation where we want line and marker
+#        # to have a different color?
+#        self.SetMarkerColor(linecolor)
 
     def draw(self, suffix: str = "", drawOption: Optional[str] = None) -> None:
         """TH1.Draw wrapper,
@@ -79,6 +83,7 @@ class histo:
         """
         if drawOption is None:
             drawOption = self.drawOption
+            
         self.th.Draw(drawOption + suffix)
 
     def divide(self, otherHisto: "histo", option: str = "") -> bool:
@@ -117,21 +122,24 @@ class histo:
             thHelper.divide_ratio(th, otherHisto.th)
         elif self.isTGraph:
             thHelper.divide_ratio_graph(th, otherHisto.th)
-
+        print('DBG color ratio fillToLine', fillToLine)
         # switch colors if requested
-        fillColor = None if fillToLine else self.fillColor
-        if fillColor is None:
-            th.SetFillColor(ROOT.kWhite)
-        # to satisfy mypy first assign lineColor
-        lineColor = self.lineColor
-        if fillToLine and self.fillColor is not None:
-            lineColor = self.fillColor
+        fillcolor = None if fillToLine else self.fillcolor
+        if fillcolor is None:
+           fillcolor = ROOT.kWhite   
+          
+        # to satisfy mypy first assign linecolor
+        linecolor = self.linecolor
+        print('DBG color ratio line color', self.linecolor)
+        if fillToLine and self.fillcolor is not None:
+            linecolor = self.fillcolor
 
+        print('DBG color ratio', linecolor)
         return histo(
             self.title + "_" + suffix,
             th,
-            lineColor=lineColor,
-            fillColor=fillColor,
+            linecolor=linecolor,
+            fillcolor=fillcolor,
             drawOption=self.drawOption,
         )
 
@@ -145,13 +153,13 @@ class histo:
         log.debug("Updating histo style")
 
         for opt, set in style.items():
-            if "markerSize" in opt:
+            if "markersize" in opt:
                 self.th.SetMarkerSize(set)
-            elif "fillStyle" in opt:
+            elif "fillstyle" in opt:
                 self.th.SetFillStyle(set)
-            elif "lineStyle" in opt:
+            elif "linestyle" in opt:
                 self.th.SetLineStyle(set)
-            elif "drawOption" in opt:
+            elif "drawoption" in opt:
                 self.drawOption = set
             else:
                 log.error(f"Unknown option {opt}")
