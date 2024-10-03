@@ -150,6 +150,8 @@ class pad:
 
     def _update_range(self, h: histo) -> None:
 
+        print('dbg', h)
+        print('DBG', h.title)
         if h.isTH1:
             self._update_range_th1(h)
         elif h.isTGraph:

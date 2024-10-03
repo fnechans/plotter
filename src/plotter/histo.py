@@ -36,10 +36,8 @@ class histo(Plottable):
             linecolor (``int``): color of the histogram line
             fillcolor (``int/None``): color of the histogram fill,
                 can be None
-        """
-
-        
-        self.th = th
+        """    
+        self.th = th    
         self.title = title
         self.linecolor = linecolor
         self.fillcolor = fillcolor
@@ -48,6 +46,7 @@ class histo(Plottable):
         if drawOption != "":
             self.drawOption = drawOption
 
+        print('DBG', self.th.GetName(), th.InheritsFrom("TH1" ), th.InheritsFrom("TGraph"))
         self.isTH1 = th.InheritsFrom("TH1")
         self.isTGraph = th.InheritsFrom("TGraph")
         
@@ -116,13 +115,12 @@ class histo(Plottable):
             suffix (``str``): suffix behind the name of the histogram
             fillToLine (``bool``): switch from fill to line
         """
-        th = self.th.Clone(suffix)
+        hratio = self.clone(th_suffix=suffix)
         # TODO: histo of different type?
         if self.isTH1:
-            thHelper.divide_ratio(th, otherHisto.th)
+            thHelper.divide_ratio(hratio.th, otherHisto.th)
         elif self.isTGraph:
-            thHelper.divide_ratio_graph(th, otherHisto.th)
-        print('DBG color ratio fillToLine', fillToLine)
+            thHelper.divide_ratio_graph(hratio.th, otherHisto.th)
         # switch colors if requested
         fillcolor = None if fillToLine else self.fillcolor
         if fillcolor is None:
@@ -130,18 +128,12 @@ class histo(Plottable):
           
         # to satisfy mypy first assign linecolor
         linecolor = self.linecolor
-        print('DBG color ratio line color', self.linecolor)
         if fillToLine and self.fillcolor is not None:
             linecolor = self.fillcolor
 
-        print('DBG color ratio', linecolor)
-        return histo(
-            self.title + "_" + suffix,
-            th,
-            linecolor=linecolor,
-            fillcolor=fillcolor,
-            drawOption=self.drawOption,
-        )
+        hratio.fillcolor = fillcolor
+        hratio.linecolor = linecolor
+        return hratio
 
     def style_histo(self, style: Dict[str, Any]) -> None:
         """Applies style to the histo
@@ -181,3 +173,21 @@ class histo(Plottable):
 
         self.th = thHelper.rebin(self.th, binning, False)
         self.apply_all_style()
+
+    def clone(self, th_suffix: Optional[str] = None, histo_title: Optional[str] = None ):
+        
+        if histo_title is None:
+            histo_title = self.title
+        
+        hname = histo_title    
+        if th_suffix is not None: 
+            hname = histo_title + '_' + th_suffix
+          
+        h = histo(histo_title, self.th.Clone(hname), drawOption=self.drawOption)
+        h.decorate(self) 
+        
+        return h
+        
+        
+        
+        

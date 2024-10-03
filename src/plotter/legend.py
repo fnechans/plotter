@@ -45,6 +45,9 @@ class legend:
         self.tlegend = TLegend(self.xMin, self.yMin, self.xMax, self.yMax)
 
         for h in self.histos:
+            print ('DBG LEG', h.inlegend)
+            if h.inlegend is False:
+                continue
             if "p" in h.drawOption:
                 self.tlegend.AddEntry(h.th, h.title, "p")
             elif h.fillcolor:
