@@ -154,7 +154,6 @@ class dataMC:
         else:
             self.hErr = self.hMCs[0].get_ratio(self.hMCs[0])
             self.hErr.title = "MC Stat. Unc."
-            print('DBG before ratio data linecolor', hData.linecolor)
             self.hRatio = hData.get_ratio(self.hMCs[0], fillToLine=False)
             self.ratioPad.add_histos([self.hErr, self.hRatio])
 

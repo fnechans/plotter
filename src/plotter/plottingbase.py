@@ -28,7 +28,6 @@ class Plottable(object):
         'integermode': False,
         'visible': True,
         'inlegend': True,
-        'scalefactor' : 1
         }
 
 

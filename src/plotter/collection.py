@@ -1,7 +1,7 @@
-from typing import Optional, List, Dict
+from typing import Optional, List, Dict, Union
 from ROOT import TH1
 from .dataset import dataset, sumOfWeightHelper
-
+import copy
 import logging
 
 log = logging.getLogger(__name__)
@@ -55,7 +55,7 @@ class collection:
 
     # TODO: need to rethink how sumOfWeightHelper is handled
     # both within collection and dataset
-    def __init__(self, title: str, sow: Optional[sumOfWeightHelper] = None) -> None:
+    def __init__(self, title: str, sow: Optional[sumOfWeightHelper] = None, scale_factor : Optional[float] = 1)  -> None:
         """
         Arguments:
             title (``str``): title of the sample,
@@ -68,9 +68,10 @@ class collection:
 
         # list of samples in the collection
         self.datasets: List[dataset] = []
+        self.scale_factor = scale_factor
 
     def __len__(self):
-        return len(self.dataset)
+        return len(self.datasets)
 
     def add_dataset(self, ds: dataset) -> None:
         """Adds dataset to the collection."""
@@ -152,42 +153,129 @@ class collection:
         if norm.byLumi:
             th.Scale(ds.lumi)
 
+class SuperCollection:
+    """ Holds set of collections or SuperCollections, necessary for scaling collections"""
+        
+    def __init__(self, title: str, scale_factor : Optional[float] = 1):
+        self.container: Dict[str, Union[collection, 'SuperCollection']] = []
+        
+        self.title = title
+        self.scale_factor = scale_factor
+        
+    def __len__(self):
+        return len(self.container)
+     
+    def add(self, col: Union[collection, 'SuperCollection']):
+
+        self.container.append(col)
+ 
+    def get_th(
+        self,
+        histoName: str,
+        norm: Optional[normalizationHelper] = None,
+        skipBad: bool = False,
+    ) -> Optional[TH1]:
+        """Gets histograms from all datasets
+        and correctly combines and normalizes them
+
+        Arguments:
+            histoName (``str``): name/path of histogram in given file
+            norm (``normalizationHelper``): defines normalization of the
+                collection, see normalizationHelper class for details
+            skipBad (``bool``): if histogram or file does not exist,
+                or is corrupted, it is skipped instead of raising error
+
+        Returns:
+            Combined histogram (``TH1``)
+        """
+
+        if len(self.container) == 0:
+            raise RuntimeError(f"Collection {self.title} is empty!\n Add datasets!")
+
+        norm_orig = None
+        if norm:
+            norm_orig = copy.copy(norm)            
+            if norm.toOne:
+                norm.toOne = False      # need to first add contributions, and normalize at the end.
+          
+        collTH: Optional[TH1] = None
+        for col in self.container:
+            
+            hist = col.get_th(histoName, norm, skipBad)
+            
+            if collTH:
+                collTH.Add(hist)
+            else:
+                collTH = hist
+
+        if collTH is None:
+            return None
+        
+        # collection scalling
+        collTH.Scale(self.scale_factor)
+
+        if norm_orig is not None and norm_orig.toOne:
+            if collTH.Integral() == 0:
+                log.warning(
+                    f"Histogram {histoName} from collection {self.title} has integral 0."
+                )
+                log.warning("Cannot normalize to one!")
+            else:
+                collTH.Scale(1.0 / collTH.Integral())
+
+        return collTH        
 
 class CollectionContainer:
     """Manages a set of collections"""
 
     def __init__(self):
-        self.collections: Dict[str, collection] = {}
+        self.container: Dict[str, Union[collection, SuperCollection]] = {}
+        
 
-    def __getitem__(self, index) -> collection:
-        return self.collections[index]
+    def __getitem__(self, index) -> Union[collection, SuperCollection]:
+        return self.container[index]
 
-    def add_dataset(self, ds: dataset) -> None:
+    def add_dataset(self, ds: dataset, sow: Optional[sumOfWeightHelper] = None) -> None:
         """Add dataset and create a correponsing collection in the librarly"""
 
-        col = collection(ds.name)
+        col = collection(ds.name, sow)
         col.add_dataset(ds)
 
         self.add_collection(ds.name, col)
 
+    def _exist_check(self, col_name):
+        
+        if col_name in self.container.keys():
+            element = self.container[col_name]
+           
+            log.error(
+                f"Element {col_name} already exists in container with title {element.title}. It is {element.__class__.__name__}  type. Keeping old!"
+            )
+            if isinstance(element, collection):
+                if len(element) == 1:
+                    log.debug(f"Old collection is a dataset: {element.datasets[0].path}")
+                    
+            return True
+        return False
+
     def add_collection(self, col_name, col: collection) -> None:
-        """Add collection to the librarly"""
+        """Add collection to the library"""
 
-        if col_name in self.collections.keys():
-            col_old = self.collections[col_name]
-            if len(col_old) > 0:
-                log.error(
-                    f"Collection {col_name} already exists in collections, keeping old!"
-                )
-
-            if len(col_old) == 1:
-                log.debug(f"Old collection is a dataset: {col_old.datasets[0].path}")
-
+        if self._exist_check(col_name):
             if len(col) == 1:
                 log.debug(f"New collection is a dataset : {col.datasets[0].path}")
             return
 
-        self.collections[col_name] = col
+        self.container[col_name] = col
+        
+    def add_supercollection(self, col_name, col: SuperCollection) -> None:
+        """ Add supercollection to the library"""
+        
+        if self._exist_check(col_name):
+            return
+
+        self.container[col_name] = col
+        
 
     def add_collections_by_name(
         self,
@@ -195,26 +283,26 @@ class CollectionContainer:
         col_title: str,
         components: List,
         sow: Optional[sumOfWeightHelper] = None,
+        scale_factor: Optional[float] = 1, 
     ) -> None:
         """Add collection by specifying their name. Internally the function will check if corresponding dataset exist"""
 
-        if col_name in self.collections.keys():
-            log.fatal(f"Collection {col_name} already exist")
-            raise RuntimeError
+        print('OKDBG adding', col_name, col_title)
 
-        datasets = []
+        if self._exist_check(col_name):
+            raise RuntimeError
+        
+        supercollection = SuperCollection(col_title, scale_factor )
         for name in components:
-            if name not in self.collections.keys():
+            if name not in self.container.keys():
                 log.warning(
-                    f"Collection {name} does not exist, cannot be added a collection {col_name}."
+                    f"Collection {name} does not exist, cannot be added a collection {col_name}"
                 )
                 continue
-            datasets.extend(self.collections[name].get_datasets())
-
-        if len(datasets):
-            col = collection(col_title, sow)
-            for ds in datasets:
-                col.add_dataset(ds)
-
-            print('adding ',  col.title)
-            self.add_collection(col_name, col)
+            element = self.container[name]
+            print('OKDBG adding component', name)        
+            # for collections which have scale_factor 1, one could include it in collection first. We ignore this here and treat all as SuperCollections
+            supercollection.add(element)
+            
+        if len(supercollection):
+            self.add_supercollection(col_name, supercollection)
