@@ -150,8 +150,6 @@ class pad:
 
     def _update_range(self, h: histo) -> None:
 
-        print('dbg', h)
-        print('DBG', h.title)
         if h.isTH1:
             self._update_range_th1(h)
         elif h.isTGraph:
@@ -223,7 +221,7 @@ class pad:
                 self.histos[0].th.Clone("basis").GetHistogram(),
                 linecolor=ROOT.kWhite,
                 fillcolor=ROOT.kWhite,
-                drawOption="hist",
+                drawoption="hist",
             )
         else:
             self.basis = histo(
@@ -231,7 +229,7 @@ class pad:
                 self.histos[0].th.Clone("basis"),
                 linecolor=ROOT.kWhite,
                 fillcolor=ROOT.kWhite,
-                drawOption="hist",
+                drawoption="hist",
             )
         self.basis.th.Reset()
         self._set_basis_axis_title()
@@ -252,7 +250,7 @@ class pad:
         for h in self.histos:
             h.draw(suffix=" same")
 
-        self.basis.draw(drawOption="sameaxis")
+        self.basis.draw(drawoption="sameaxis")
 
     def _set_basis_axis_title(self) -> None:
         """Sets titles of the axis through the basis histogram"""

@@ -27,7 +27,7 @@ class histo(Plottable):
         th: TH1,
         linecolor: int = ROOT.kBlack,
         fillcolor: Optional[int] = 0,
-        drawOption: str = "",
+        drawoption: str = "",
         configPath: str = "",
     ) -> None:
         """
@@ -39,21 +39,19 @@ class histo(Plottable):
         """    
         self.th = th    
         self.title = title
+        super().__init__()
+        
         self.linecolor = linecolor
         self.fillcolor = fillcolor
         self.config = loader.load_config(configPath) if configPath != "" else {}
         self.apply_all_style()
-        if drawOption != "":
-            self.drawOption = drawOption
-
-        print('DBG', self.th.GetName(), th.InheritsFrom("TH1" ), th.InheritsFrom("TGraph"))
+        if drawoption != "":
+            self.drawoption = drawoption
+            
         self.isTH1 = th.InheritsFrom("TH1")
         self.isTGraph = th.InheritsFrom("TGraph")
         
-        super().__init__()
-
     def apply_all_style(self):
-        print('dbgtit', self.title)
         self.th.SetTitle(self.title)
  #       self.set_lineColor(self.linecolor)
  #       if self.fillcolor is not None:
@@ -73,17 +71,17 @@ class histo(Plottable):
 #        # to have a different color?
 #        self.SetMarkerColor(linecolor)
 
-    def draw(self, suffix: str = "", drawOption: Optional[str] = None) -> None:
+    def draw(self, suffix: str = "", drawoption: Optional[str] = None) -> None:
         """TH1.Draw wrapper,
 
         Arguments
             option (``str``): if want to overwrite self.option
             suffix (``str``): suffix afteert option, mainly for "same"
         """
-        if drawOption is None:
-            drawOption = self.drawOption
+        if drawoption is None:
+            drawoption = self.drawoption
             
-        self.th.Draw(drawOption + suffix)
+        self.th.Draw(drawoption + suffix)
 
     def divide(self, otherHisto: "histo", option: str = "") -> bool:
         """Add ROOT::TH1::Divide to histo level
@@ -152,7 +150,7 @@ class histo(Plottable):
             elif "linestyle" in opt:
                 self.th.SetLineStyle(set)
             elif "drawoption" in opt:
-                self.drawOption = set
+                self.drawoption = set
             else:
                 log.error(f"Unknown option {opt}")
                 raise RuntimeError
@@ -183,7 +181,7 @@ class histo(Plottable):
         if th_suffix is not None: 
             hname = histo_title + '_' + th_suffix
           
-        h = histo(histo_title, self.th.Clone(hname), drawOption=self.drawOption)
+        h = histo(histo_title, self.th.Clone(hname))
         h.decorate(self) 
         
         return h

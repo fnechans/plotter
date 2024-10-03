@@ -121,10 +121,10 @@ class dataMC:
             #todo custom config
             cfgErr = loader.load_config(loader.path() + "configs/err.json")
             hMC_stat.style_histo(cfgErr)
-            hMC_stat.drawOption = "e2"
+            hMC_stat.drawoption = "e2"
             
             hMC_stat_line = hMC_stat.clone("Stack MC stat line")
-            hMC_stat_line.drawOption = 'hist'
+            hMC_stat_line.drawoption = 'hist'
             hMC_stat_line.fillstyle = 'hollow'
             hMC_stat_line.linecolor = 'darkblue'
             hMC_stat_line.linewidth = 2

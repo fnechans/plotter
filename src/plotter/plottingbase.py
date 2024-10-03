@@ -99,10 +99,10 @@ class Plottable(object):
 
             if obj is None:
                 # Populate defaults if we are not asrootpy-ing existing object
-                print('DBG INITTING EXTRA')
+
                 decor = dict(**Plottable.DEFAULT_DECOR)
                 decor.update(Plottable.EXTRA_ATTRS)
-                print('DBG', decor['inlegend'])
+
                 if 'color' in kwargs:
                     decor.pop('linecolor', None)
                     decor.pop('fillcolor', None)
@@ -125,8 +125,6 @@ class Plottable(object):
                 self.SetMarkerSize(obj.th.GetMarkerSize())
             if kwargs:
                 self.decorate(**kwargs)
-                
-        print('DBG on exist', self.inlegend)
 
     #TODO: @chainable
     def decorate(self, other=None, **kwargs):

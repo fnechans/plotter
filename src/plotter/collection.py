@@ -286,9 +286,7 @@ class CollectionContainer:
         scale_factor: Optional[float] = 1, 
     ) -> None:
         """Add collection by specifying their name. Internally the function will check if corresponding dataset exist"""
-
-        print('OKDBG adding', col_name, col_title)
-
+        
         if self._exist_check(col_name):
             raise RuntimeError
         
@@ -299,8 +297,8 @@ class CollectionContainer:
                     f"Collection {name} does not exist, cannot be added a collection {col_name}"
                 )
                 continue
-            element = self.container[name]
-            print('OKDBG adding component', name)        
+            
+            element = self.container[name]     
             # for collections which have scale_factor 1, one could include it in collection first. We ignore this here and treat all as SuperCollections
             supercollection.add(element)
             
