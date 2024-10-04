@@ -53,23 +53,10 @@ class histo(Plottable):
         
     def apply_all_style(self):
         self.th.SetTitle(self.title)
- #       self.set_lineColor(self.linecolor)
- #       if self.fillcolor is not None:
- #           self.set_fillColor(self.fillcolor)
 
         if self.config != "":
             self.style_histo(self.config)
 
-#    def set_fillColor(self, fillcolor: int):
-#        """Sets fill color"""
-#        self.th.SetFillColor(fillcolor)
-
-#    def set_lineColor(self, linecolor: int):
-#        """Sets line color"""
-#        self.SetLineColor(linecolor)
-#        # Is there situation where we want line and marker
-#        # to have a different color?
-#        self.SetMarkerColor(linecolor)
 
     def draw(self, suffix: str = "", drawoption: Optional[str] = None) -> None:
         """TH1.Draw wrapper,
@@ -114,7 +101,6 @@ class histo(Plottable):
             fillToLine (``bool``): switch from fill to line
         """
         hratio = self.clone(th_suffix=suffix)
-        print("OKDBG ", hratio.linecolor)
         # TODO: histo of different type?
         if self.isTH1:
             thHelper.divide_ratio(hratio.th, otherHisto.th)
@@ -132,7 +118,6 @@ class histo(Plottable):
 
         hratio.fillcolor = fillcolor
         hratio.linecolor = linecolor
-        print("OKDBG exist ", hratio.linecolor)
         return hratio
 
     def style_histo(self, style: Dict[str, Any]) -> None:
