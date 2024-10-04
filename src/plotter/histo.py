@@ -36,27 +36,26 @@ class histo(Plottable):
             linecolor (``int``): color of the histogram line
             fillcolor (``int/None``): color of the histogram fill,
                 can be None
-        """    
-        self.th = th    
+        """
+        self.th = th
         self.title = title
         super().__init__()
-        
+
         self.linecolor = linecolor
         self.fillcolor = fillcolor
         self.config = loader.load_config(configPath) if configPath != "" else {}
         self.apply_all_style()
         if drawoption != "":
             self.drawoption = drawoption
-            
+
         self.isTH1 = th.InheritsFrom("TH1")
         self.isTGraph = th.InheritsFrom("TGraph")
-        
+
     def apply_all_style(self):
         self.th.SetTitle(self.title)
 
         if self.config != "":
             self.style_histo(self.config)
-
 
     def draw(self, suffix: str = "", drawoption: Optional[str] = None) -> None:
         """TH1.Draw wrapper,
@@ -67,7 +66,7 @@ class histo(Plottable):
         """
         if drawoption is None:
             drawoption = self.drawoption
-            
+
         self.th.Draw(drawoption + suffix)
 
     def divide(self, otherHisto: "histo", option: str = "") -> bool:
@@ -109,8 +108,8 @@ class histo(Plottable):
         # switch colors if requested
         fillcolor = None if fillToLine else self.fillcolor
         if fillcolor is None:
-           fillcolor = ROOT.kWhite   
-          
+            fillcolor = ROOT.kWhite
+
         # to satisfy mypy first assign linecolor
         linecolor = self.linecolor
         if fillToLine and self.fillcolor is not None:
@@ -159,20 +158,16 @@ class histo(Plottable):
         self.th = thHelper.rebin(self.th, binning, False)
         self.apply_all_style()
 
-    def clone(self, th_suffix: Optional[str] = None, histo_title: Optional[str] = None ):
-        
+    def clone(self, th_suffix: Optional[str] = None, histo_title: Optional[str] = None):
+
         if histo_title is None:
             histo_title = self.title
-        
-        hname = histo_title    
-        if th_suffix is not None: 
-            hname = histo_title + '_' + th_suffix
-          
+
+        hname = histo_title
+        if th_suffix is not None:
+            hname = histo_title + "_" + th_suffix
+
         h = histo(histo_title, self.th.Clone(hname))
-        h.decorate(self) 
-        
+        h.decorate(self)
+
         return h
-        
-        
-        
-        

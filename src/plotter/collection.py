@@ -35,17 +35,17 @@ class normalizationHelper:
         self.byXS = normByXS
         self.bySoW = normBySoW
 
+
 def get_normalizationHelper(config):
-    
-    if config == 'none':
+
+    if config == "none":
         return normalizationHelper()
-    if config == 'events':
+    if config == "events":
         return normalizationHelper(normByLumi=True, normByXS=True, normBySoW=True)
-    if config == 'one':
+    if config == "one":
         return normalizationHelper(normToOne=True)
     else:
-        raise RuntimeError('Unknown normalization config '+config)
-        
+        raise RuntimeError("Unknown normalization config " + config)
 
 
 class collection:
@@ -55,7 +55,12 @@ class collection:
 
     # TODO: need to rethink how sumOfWeightHelper is handled
     # both within collection and dataset
-    def __init__(self, title: str, sow: Optional[sumOfWeightHelper] = None, scale_factor : Optional[float] = 1)  -> None:
+    def __init__(
+        self,
+        title: str,
+        sow: Optional[sumOfWeightHelper] = None,
+        scale_factor: Optional[float] = 1,
+    ) -> None:
         """
         Arguments:
             title (``str``): title of the sample,
@@ -153,22 +158,23 @@ class collection:
         if norm.byLumi:
             th.Scale(ds.lumi)
 
+
 class SuperCollection:
-    """ Holds set of collections or SuperCollections, necessary for scaling collections"""
-        
-    def __init__(self, title: str, scale_factor : Optional[float] = 1):
-        self.container: Dict[str, Union[collection, 'SuperCollection']] = []
-        
+    """Holds set of collections or SuperCollections, necessary for scaling collections"""
+
+    def __init__(self, title: str, scale_factor: Optional[float] = 1):
+        self.container: Dict[str, Union[collection, "SuperCollection"]] = []
+
         self.title = title
         self.scale_factor = scale_factor
-        
+
     def __len__(self):
         return len(self.container)
-     
-    def add(self, col: Union[collection, 'SuperCollection']):
+
+    def add(self, col: Union[collection, "SuperCollection"]):
 
         self.container.append(col)
- 
+
     def get_th(
         self,
         histoName: str,
@@ -194,15 +200,17 @@ class SuperCollection:
 
         norm_orig = None
         if norm:
-            norm_orig = copy.copy(norm)            
+            norm_orig = copy.copy(norm)
             if norm.toOne:
-                norm.toOne = False      # need to first add contributions, and normalize at the end.
-          
+                norm.toOne = (
+                    False  # need to first add contributions, and normalize at the end.
+                )
+
         collTH: Optional[TH1] = None
         for col in self.container:
-            
+
             hist = col.get_th(histoName, norm, skipBad)
-            
+
             if collTH:
                 collTH.Add(hist)
             else:
@@ -210,7 +218,7 @@ class SuperCollection:
 
         if collTH is None:
             return None
-        
+
         # collection scalling
         collTH.Scale(self.scale_factor)
 
@@ -223,14 +231,14 @@ class SuperCollection:
             else:
                 collTH.Scale(1.0 / collTH.Integral())
 
-        return collTH        
+        return collTH
+
 
 class CollectionContainer:
     """Manages a set of collections"""
 
     def __init__(self):
         self.container: Dict[str, Union[collection, SuperCollection]] = {}
-        
 
     def __getitem__(self, index) -> Union[collection, SuperCollection]:
         return self.container[index]
@@ -244,17 +252,19 @@ class CollectionContainer:
         self.add_collection(ds.name, col)
 
     def _exist_check(self, col_name):
-        
+
         if col_name in self.container.keys():
             element = self.container[col_name]
-           
+
             log.error(
                 f"Element {col_name} already exists in container with title {element.title}. It is {element.__class__.__name__}  type. Keeping old!"
             )
             if isinstance(element, collection):
                 if len(element) == 1:
-                    log.debug(f"Old collection is a dataset: {element.datasets[0].path}")
-                    
+                    log.debug(
+                        f"Old collection is a dataset: {element.datasets[0].path}"
+                    )
+
             return True
         return False
 
@@ -267,15 +277,14 @@ class CollectionContainer:
             return
 
         self.container[col_name] = col
-        
+
     def add_supercollection(self, col_name, col: SuperCollection) -> None:
-        """ Add supercollection to the library"""
-        
+        """Add supercollection to the library"""
+
         if self._exist_check(col_name):
             return
 
         self.container[col_name] = col
-        
 
     def add_collections_by_name(
         self,
@@ -283,24 +292,24 @@ class CollectionContainer:
         col_title: str,
         components: List,
         sow: Optional[sumOfWeightHelper] = None,
-        scale_factor: Optional[float] = 1, 
+        scale_factor: Optional[float] = 1,
     ) -> None:
         """Add collection by specifying their name. Internally the function will check if corresponding dataset exist"""
-        
+
         if self._exist_check(col_name):
             raise RuntimeError
-        
-        supercollection = SuperCollection(col_title, scale_factor )
+
+        supercollection = SuperCollection(col_title, scale_factor)
         for name in components:
             if name not in self.container.keys():
                 log.warning(
                     f"Collection {name} does not exist, cannot be added a collection {col_name}"
                 )
                 continue
-            
-            element = self.container[name]     
+
+            element = self.container[name]
             # for collections which have scale_factor 1, one could include it in collection first. We ignore this here and treat all as SuperCollections
             supercollection.add(element)
-            
+
         if len(supercollection):
             self.add_supercollection(col_name, supercollection)
