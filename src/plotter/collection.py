@@ -163,7 +163,7 @@ class SuperCollection:
     """Holds set of collections or SuperCollections, necessary for scaling collections"""
 
     def __init__(self, title: str, scale_factor: Optional[float] = 1):
-        self.container: Dict[str, Union[collection, "SuperCollection"]] = []
+        self.container: List[Union[collection, "SuperCollection"]] = []
 
         self.title = title
         self.scale_factor = scale_factor
@@ -238,7 +238,7 @@ class CollectionContainer:
     """Manages a set of collections"""
 
     def __init__(self):
-        self.container: Dict[str, Union[collection, SuperCollection]] = {}
+        self.container: Dict[Union[collection, SuperCollection]] = {}
 
     def __getitem__(self, index) -> Union[collection, SuperCollection]:
         return self.container[index]
