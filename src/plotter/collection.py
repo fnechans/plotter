@@ -258,7 +258,7 @@ class CollectionContainer:
 
             log.error(
                 f"Element {col_name} already exists in container with title {element.title}" +
-                f"It is {element.__class__.__name__}  type. Keeping old!"
+                f" It is {element.__class__.__name__} type of size " + str(len(element)) + ". Keeping old!"
             )
             if isinstance(element, collection):
                 if len(element) == 1:
@@ -302,9 +302,10 @@ class CollectionContainer:
 
         supercollection = SuperCollection(col_title, scale_factor)
         for name in components:
+            
             if name not in self.container.keys():
                 log.warning(
-                    f"Collection {name} does not exist, cannot be added a collection {col_name}"
+                    f"Collection {name} does not exist, cannot be added to SuperCollection {col_name}"
                 )
                 continue
 
