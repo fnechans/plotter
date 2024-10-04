@@ -277,8 +277,8 @@ class fraction:
         self.mainPad.logx(doLog)
         self.ratioPad.logx(doLog)
 
-    def save(self, plotName: str):
-        self.canvas.save(plotName)
+    def save(self, plotName: str, verbose = False):
+        self.canvas.save(plotName, verbose)
 
 
 class Comparison:
@@ -360,7 +360,7 @@ class Comparison:
             if first:
                 first = False
                 continue
-            hR = h.get_ratio(self.histos[0], fillToLine=True)
+            hR = h.get_ratio(self.histos[0], fillToLine=False)
             self.hRatios.append(hR)
         self.ratioPad.add_histos([self.hErr] + self.hRatios)
         self.ratioPad.plot_histos()
@@ -378,5 +378,6 @@ class Comparison:
         self.mainPad.logx(doLog)
         self.ratioPad.logx(doLog)
 
-    def save(self, plotName: str):
-        self.canvas.save(plotName)
+    def save(self, plotName: str, verbose = False):
+        self.canvas.save(plotName, verbose)
+    

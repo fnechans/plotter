@@ -114,6 +114,7 @@ class histo(Plottable):
             fillToLine (``bool``): switch from fill to line
         """
         hratio = self.clone(th_suffix=suffix)
+        print("OKDBG ", hratio.linecolor)
         # TODO: histo of different type?
         if self.isTH1:
             thHelper.divide_ratio(hratio.th, otherHisto.th)
@@ -131,6 +132,7 @@ class histo(Plottable):
 
         hratio.fillcolor = fillcolor
         hratio.linecolor = linecolor
+        print("OKDBG exist ", hratio.linecolor)
         return hratio
 
     def style_histo(self, style: Dict[str, Any]) -> None:
