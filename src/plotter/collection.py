@@ -257,7 +257,8 @@ class CollectionContainer:
             element = self.container[col_name]
 
             log.error(
-                f"Element {col_name} already exists in container with title {element.title}. It is {element.__class__.__name__}  type. Keeping old!"
+                f"Element {col_name} already exists in container with title {element.title}" +
+                f"It is {element.__class__.__name__}  type. Keeping old!"
             )
             if isinstance(element, collection):
                 if len(element) == 1:
@@ -308,7 +309,8 @@ class CollectionContainer:
                 continue
 
             element = self.container[name]
-            # for collections which have scale_factor 1, one could include it in collection first. We ignore this here and treat all as SuperCollections
+            # for collections which have scale_factor 1, one could include it in collection first.
+            # We ignore this here and treat all as SuperCollections
             supercollection.add(element)
 
         if len(supercollection):

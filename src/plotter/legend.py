@@ -28,7 +28,8 @@ class legend:
 
     def add_histo(self, h: histo):
         """ Add histo to the legend """
-        if h.title != "SKIP_LEGEND":  #TODO IMPROVE BY USING DECORATOR
+         #TODO IMPROVE BY USING DECORATOR (used in nch)
+        if h.title != "SKIP_LEGEND": 
             self.histos.append(h)
 
     def add_histos(self, hs: List[histo]):

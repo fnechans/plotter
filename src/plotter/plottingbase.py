@@ -3,7 +3,6 @@ This module contains base classes defining core funcionality
 Adapted from https://github.com/rootpy/rootpy
 """
 
-import warnings
 import sys
 import ROOT
 
@@ -19,7 +18,8 @@ class Plottable(object):
     and to override ROOT TAttXXX and Draw methods.
     """
 
-    def __init__(self, **kwargs):  ## todo handle copy construction
+    ## todo handle copy construction
+    def __init__(self, **kwargs):  
         self._post_init(**kwargs)
 
     EXTRA_ATTRS = {
@@ -51,6 +51,7 @@ class Plottable(object):
         self._clone_post_init(**kwargs)
 
     def _clone_post_init(self, obj=None, **kwargs):
+        # noqa: C901
         """
         obj must be another Plottable instance. obj is used by Clone to properly
         transfer all attributes onto this object.
@@ -126,6 +127,7 @@ class Plottable(object):
 
     # TODO: @chainable
     def decorate(self, other=None, **kwargs):
+        # noqa: C901
         """
         Apply style options to a Plottable object.
 
@@ -253,9 +255,6 @@ class Plottable(object):
             ROOT.TAttLine.SetLineWidth(self.th, width)
 
     def GetLineWidth(self):
-        # if isinstance(self.th, ROOT.TAttLine):
-        #    return ROOT.TAttLine.GetLineWidth(self.th)
-        # else:
         return self._linewidth
 
     @property
@@ -374,16 +373,10 @@ class Plottable(object):
         self._markersize = size
         if isinstance(self.th, ROOT.TAttMarker):
             ROOT.TAttMarker.SetMarkerSize(self.th, size)
-        # else:
-        #    self._markersize = size
 
     def GetMarkerSize(self):
         return self._markersize
-        # if isinstance(self.th, ROOT.TAttMarker):
-        #    return ROOT.TAttMarker.GetMarkerSize(self)
-        # else:
-        #    return self._markersize
-
+    
     @property
     def markersize(self):
         return self.GetMarkerSize()
@@ -1039,6 +1032,7 @@ _cnames = {
 
 
 def convert_color(color, mode):
+    # noqa: C901
     """
     Convert *color* to a TColor if *mode='root'* or to (r,g,b) if 'mpl'.
 
