@@ -18,8 +18,8 @@ class Plottable(object):
     and to override ROOT TAttXXX and Draw methods.
     """
 
-    ## todo handle copy construction
-    def __init__(self, **kwargs):  
+    # todo handle copy construction
+    def __init__(self, **kwargs):
         self._post_init(**kwargs)
 
     EXTRA_ATTRS = {
@@ -50,8 +50,7 @@ class Plottable(object):
     def _post_init(self, **kwargs):
         self._clone_post_init(**kwargs)
 
-    def _clone_post_init(self, obj=None, **kwargs):
-        # noqa: C901
+    def _clone_post_init(self, obj=None, **kwargs): # noqa: C901
         """
         obj must be another Plottable instance. obj is used by Clone to properly
         transfer all attributes onto this object.
@@ -376,7 +375,7 @@ class Plottable(object):
 
     def GetMarkerSize(self):
         return self._markersize
-    
+
     @property
     def markersize(self):
         return self.GetMarkerSize()
