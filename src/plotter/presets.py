@@ -43,6 +43,11 @@ class simple:
         self.mainPad.add_histos(self.hs)
         self.mainPad.plot_histos()
 
+        self.canvas.tcan.cd()
+        self.leg = legend()
+        self.leg.add_histos(self.hs)
+        self.leg.create_and_draw()
+
     def logx(self, doLog=True):
         self.mainPad.logx(doLog)
 
@@ -52,8 +57,8 @@ class simple:
     def set_yrange(self, min, max):
         self.mainPad.set_yrange(min, max)
 
-    def save(self, plotName: str):
-        self.canvas.save(plotName)
+    def save(self, plotName: str, verbose=False):
+        self.canvas.save(plotName, verbose)
 
 
 class dataMC:
@@ -103,14 +108,34 @@ class dataMC:
         # stack the MC
         self.hMCs: List[histo] = []
         for _hMC in _hMCs:
-            # TODO: this should be mainly implemented in histo?
-            # copy function which makes clone
-            # or maybe deepcopy would work directly?
-            hMC = copy.copy(_hMC)
-            hMC.th = _hMC.th.Clone("stack")
+            hMC = _hMC.clone("stack")
+            hMC.linewidth = 0  # do not show stat of individual stack components
             for hOther in self.hMCs:
                 hOther.th.Add(hMC.th)
             self.hMCs.append(hMC)
+
+        # MC stat uncertainty
+        if len(self.hMCs):
+            hMC_stat = self.hMCs[0].clone("Stack MC stat")
+            hMC_stat.color = ROOT.kGray + 1
+            hMC_stat.linecolor = "blue"
+            hMC_stat.linewidth = 3
+            hMC_stat.inlegend = False
+
+            # todo custom config
+            cfgErr = loader.load_config(loader.path() + "configs/err.json")
+            hMC_stat.style_histo(cfgErr)
+            hMC_stat.drawoption = "e2"
+
+            hMC_stat_line = hMC_stat.clone("Stack MC stat line")
+            hMC_stat_line.drawoption = "hist"
+            hMC_stat_line.fillstyle = "hollow"
+            hMC_stat_line.linecolor = "darkblue"
+            hMC_stat_line.linewidth = 2
+            hMC_stat_line.inlegend = False
+
+            self.hMCs.append(hMC_stat)
+            self.hMCs.append(hMC_stat_line)
 
         self.mainPad.add_histos(self.hMCs)
 
@@ -130,11 +155,10 @@ class dataMC:
         else:
             self.hErr = self.hMCs[0].get_ratio(self.hMCs[0])
             self.hErr.title = "MC Stat. Unc."
-            self.hRatio = hData.get_ratio(self.hMCs[0], fillToLine=True)
+            self.hRatio = hData.get_ratio(self.hMCs[0], fillToLine=False)
             self.ratioPad.add_histos([self.hErr, self.hRatio])
 
-        self.hErr.set_fillColor(ROOT.kGray + 1)
-        self.hErr.set_lineColor(ROOT.kGray + 1)
+        self.hErr.color = ROOT.kGray + 1
         # TODO: custom config
         cfgErr = loader.load_config(loader.path() + "configs/err.json")
         self.hErr.style_histo(cfgErr)
@@ -234,8 +258,7 @@ class fraction:
                 self.hAll.th.Add(h.th)
 
         for h in hToFrac:
-            hF = copy.copy(h)
-            hF.th = h.th.Clone("stack")
+            hF = h.clone("stack")
             hF.th.Divide(self.hAll.th)
             self.hFrac.append(hF)
 
@@ -255,8 +278,8 @@ class fraction:
         self.mainPad.logx(doLog)
         self.ratioPad.logx(doLog)
 
-    def save(self, plotName: str):
-        self.canvas.save(plotName)
+    def save(self, plotName: str, verbose=False):
+        self.canvas.save(plotName, verbose)
 
 
 class Comparison:
@@ -327,8 +350,7 @@ class Comparison:
         self.mainPad.plot_histos()
 
         self.hErr = self.histos[0].get_ratio(self.histos[0])
-        self.hErr.set_fillColor(ROOT.kGray + 1)
-        self.hErr.set_lineColor(ROOT.kGray + 1)
+        self.hErr.color = ROOT.kGray + 1
         # TODO: custom config
         cfgErr = loader.load_config(loader.path() + "configs/err.json")
         self.hErr.style_histo(cfgErr)
@@ -339,7 +361,7 @@ class Comparison:
             if first:
                 first = False
                 continue
-            hR = h.get_ratio(self.histos[0], fillToLine=True)
+            hR = h.get_ratio(self.histos[0], fillToLine=False)
             self.hRatios.append(hR)
         self.ratioPad.add_histos([self.hErr] + self.hRatios)
         self.ratioPad.plot_histos()
@@ -357,5 +379,5 @@ class Comparison:
         self.mainPad.logx(doLog)
         self.ratioPad.logx(doLog)
 
-    def save(self, plotName: str):
-        self.canvas.save(plotName)
+    def save(self, plotName: str, verbose=False):
+        self.canvas.save(plotName, verbose)

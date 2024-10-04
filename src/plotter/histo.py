@@ -3,6 +3,7 @@ from ROOT import TH1
 from . import thHelper
 from . import loader
 from typing import Optional, Dict, Any, List, Union
+from plotter.plottingbase import Plottable
 
 import logging
 
@@ -11,7 +12,7 @@ log = logging.getLogger(__name__)
 ROOT.TH1.AddDirectory(False)
 
 
-class histo:
+class histo(Plottable):
     """Wrapper class around TH1, setups the main properties
     + contains few usefull function (e.g. divide_ratio)
 
@@ -24,62 +25,49 @@ class histo:
         self,
         title: str,
         th: TH1,
-        lineColor: int = ROOT.kBlack,
-        fillColor: Optional[int] = None,
-        drawOption: str = "",
+        linecolor: int = ROOT.kBlack,
+        fillcolor: Optional[int] = 0,
+        drawoption: str = "",
         configPath: str = "",
     ) -> None:
         """
         Arguments:
             th (``TH1``): ROOT histogram
-            lineColor (``int``): color of the histogram line
-            fillColor (``int/None``): color of the histogram fill,
+            linecolor (``int``): color of the histogram line
+            fillcolor (``int/None``): color of the histogram fill,
                 can be None
         """
         self.th = th
         self.title = title
-        self.lineColor = lineColor
-        self.fillColor = fillColor
+        super().__init__()
+
+        self.linecolor = linecolor
+        self.fillcolor = fillcolor
         self.config = loader.load_config(configPath) if configPath != "" else {}
         self.apply_all_style()
-        if drawOption != "":
-            self.drawOption = drawOption
+        if drawoption != "":
+            self.drawoption = drawoption
 
         self.isTH1 = th.InheritsFrom("TH1")
         self.isTGraph = th.InheritsFrom("TGraph")
 
     def apply_all_style(self):
         self.th.SetTitle(self.title)
-        self.set_lineColor(self.lineColor)
-        if self.fillColor is not None:
-            self.set_fillColor(self.fillColor)
 
         if self.config != "":
             self.style_histo(self.config)
 
-    def set_fillColor(self, fillColor: int):
-        """Sets fill color"""
-        self.fillColor = fillColor
-        self.th.SetFillColor(fillColor)
-
-    def set_lineColor(self, lineColor: int):
-        """Sets line color"""
-        self.lineColor = lineColor
-        self.th.SetLineColor(lineColor)
-        # Is there situation where we want line and marker
-        # to have a different color?
-        self.th.SetMarkerColor(lineColor)
-
-    def draw(self, suffix: str = "", drawOption: Optional[str] = None) -> None:
+    def draw(self, suffix: str = "", drawoption: Optional[str] = None) -> None:
         """TH1.Draw wrapper,
 
         Arguments
             option (``str``): if want to overwrite self.option
             suffix (``str``): suffix afteert option, mainly for "same"
         """
-        if drawOption is None:
-            drawOption = self.drawOption
-        self.th.Draw(drawOption + suffix)
+        if drawoption is None:
+            drawoption = self.drawoption
+
+        self.th.Draw(drawoption + suffix)
 
     def divide(self, otherHisto: "histo", option: str = "") -> bool:
         """Add ROOT::TH1::Divide to histo level
@@ -111,29 +99,25 @@ class histo:
             suffix (``str``): suffix behind the name of the histogram
             fillToLine (``bool``): switch from fill to line
         """
-        th = self.th.Clone(suffix)
+        hratio = self.clone(th_suffix=suffix)
         # TODO: histo of different type?
         if self.isTH1:
-            thHelper.divide_ratio(th, otherHisto.th)
+            thHelper.divide_ratio(hratio.th, otherHisto.th)
         elif self.isTGraph:
-            thHelper.divide_ratio_graph(th, otherHisto.th)
-
+            thHelper.divide_ratio_graph(hratio.th, otherHisto.th)
         # switch colors if requested
-        fillColor = None if fillToLine else self.fillColor
-        if fillColor is None:
-            th.SetFillColor(ROOT.kWhite)
-        # to satisfy mypy first assign lineColor
-        lineColor = self.lineColor
-        if fillToLine and self.fillColor is not None:
-            lineColor = self.fillColor
+        fillcolor = None if fillToLine else self.fillcolor
+        if fillcolor is None:
+            fillcolor = ROOT.kWhite
 
-        return histo(
-            self.title + "_" + suffix,
-            th,
-            lineColor=lineColor,
-            fillColor=fillColor,
-            drawOption=self.drawOption,
-        )
+        # to satisfy mypy first assign linecolor
+        linecolor = self.linecolor
+        if fillToLine and self.fillcolor is not None:
+            linecolor = self.fillcolor
+
+        hratio.fillcolor = fillcolor
+        hratio.linecolor = linecolor
+        return hratio
 
     def style_histo(self, style: Dict[str, Any]) -> None:
         """Applies style to the histo
@@ -145,14 +129,14 @@ class histo:
         log.debug("Updating histo style")
 
         for opt, set in style.items():
-            if "markerSize" in opt:
+            if "markersize" in opt:
                 self.th.SetMarkerSize(set)
-            elif "fillStyle" in opt:
+            elif "fillstyle" in opt:
                 self.th.SetFillStyle(set)
-            elif "lineStyle" in opt:
+            elif "linestyle" in opt:
                 self.th.SetLineStyle(set)
-            elif "drawOption" in opt:
-                self.drawOption = set
+            elif "drawoption" in opt:
+                self.drawoption = set
             else:
                 log.error(f"Unknown option {opt}")
                 raise RuntimeError
@@ -173,3 +157,17 @@ class histo:
 
         self.th = thHelper.rebin(self.th, binning, False)
         self.apply_all_style()
+
+    def clone(self, th_suffix: Optional[str] = None, histo_title: Optional[str] = None):
+
+        if histo_title is None:
+            histo_title = self.title
+
+        hname = histo_title
+        if th_suffix is not None:
+            hname = histo_title + "_" + th_suffix
+
+        h = histo(histo_title, self.th.Clone(hname))
+        h.decorate(self)
+
+        return h

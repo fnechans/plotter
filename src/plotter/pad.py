@@ -219,17 +219,17 @@ class pad:
             self.basis = histo(
                 "",
                 self.histos[0].th.Clone("basis").GetHistogram(),
-                lineColor=ROOT.kWhite,
-                fillColor=ROOT.kWhite,
-                drawOption="hist",
+                linecolor=ROOT.kWhite,
+                fillcolor=ROOT.kWhite,
+                drawoption="hist",
             )
         else:
             self.basis = histo(
                 "",
                 self.histos[0].th.Clone("basis"),
-                lineColor=ROOT.kWhite,
-                fillColor=ROOT.kWhite,
-                drawOption="hist",
+                linecolor=ROOT.kWhite,
+                fillcolor=ROOT.kWhite,
+                drawoption="hist",
             )
         self.basis.th.Reset()
         self._set_basis_axis_title()
@@ -250,7 +250,7 @@ class pad:
         for h in self.histos:
             h.draw(suffix=" same")
 
-        self.basis.draw(drawOption="sameaxis")
+        self.basis.draw(drawoption="sameaxis")
 
     def _set_basis_axis_title(self) -> None:
         """Sets titles of the axis through the basis histogram"""

@@ -28,6 +28,8 @@ class legend:
 
     def add_histo(self, h: histo):
         """ Add histo to the legend """
+
+        # TODO IMPROVE BY USING DECORATOR (used in nch)
         if h.title != "SKIP_LEGEND":
             self.histos.append(h)
 
@@ -45,9 +47,11 @@ class legend:
         self.tlegend = TLegend(self.xMin, self.yMin, self.xMax, self.yMax)
 
         for h in self.histos:
-            if "p" in h.drawOption:
+            if h.inlegend is False:
+                continue
+            if "p" in h.drawoption:
                 self.tlegend.AddEntry(h.th, h.title, "p")
-            elif h.fillColor:
+            elif h.fillcolor:
                 self.tlegend.AddEntry(h.th, h.title, "f")
             else:
                 self.tlegend.AddEntry(h.th, h.title, "l")
