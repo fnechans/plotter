@@ -586,7 +586,7 @@ markerstyles_text2root = {
 }
 
 
-def convert_markerstyle(inputstyle, mode, inputmode=None): # noqa:C901
+def convert_markerstyle(inputstyle, mode, inputmode=None):  # noqa:C901
     """
     Convert *inputstyle* to ROOT or matplotlib format.
 
@@ -696,7 +696,7 @@ linestyles_text2root = {
 }
 
 
-def convert_linestyle(inputstyle, mode, inputmode=None): # noqa: C901
+def convert_linestyle(inputstyle, mode, inputmode=None):  # noqa: C901
     """
     Convert *inputstyle* to ROOT or matplotlib format.
 
@@ -1066,7 +1066,7 @@ def convert_color(color, mode):  # noqa: C901
             color = color.lstrip("#")
             lv = len(color)
             color = tuple(
-                int(color[i : i + lv // 3], 16) for i in range(0, lv, lv // 3)
+                int(color[i: i + lv // 3], 16) for i in range(0, lv, lv // 3)
             )
             if lv == 3:
                 color = tuple(x * 16 + x for x in color)
