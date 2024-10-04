@@ -50,7 +50,7 @@ class Plottable(object):
     def _post_init(self, **kwargs):
         self._clone_post_init(**kwargs)
 
-    def _clone_post_init(self, obj=None, **kwargs): # noqa: C901
+    def _clone_post_init(self, obj=None, **kwargs):  # noqa: C901
         """
         obj must be another Plottable instance. obj is used by Clone to properly
         transfer all attributes onto this object.
@@ -125,8 +125,7 @@ class Plottable(object):
                 self.decorate(**kwargs)
 
     # TODO: @chainable
-    def decorate(self, other=None, **kwargs):
-        # noqa: C901
+    def decorate(self, other=None, **kwargs):  # noqa: C901
         """
         Apply style options to a Plottable object.
 
@@ -500,8 +499,8 @@ class _StyleContainer(object):
         return str(self._input)
 
 
-##############################
-#### Markers #################
+#  #############################
+#  ### Markers #################
 
 markerstyles_root2mpl = {
     1: ".",
@@ -587,7 +586,7 @@ markerstyles_text2root = {
 }
 
 
-def convert_markerstyle(inputstyle, mode, inputmode=None):
+def convert_markerstyle(inputstyle, mode, inputmode=None): # noqa:C901
     """
     Convert *inputstyle* to ROOT or matplotlib format.
 
@@ -660,8 +659,8 @@ class MarkerStyle(_StyleContainer):
         _StyleContainer.__init__(self, style, convert_markerstyle)
 
 
-##############################
-#### Lines ###################
+#  #############################
+#  ### Lines ###################
 
 linestyles_root2mpl = {
     1: "solid",
@@ -697,7 +696,7 @@ linestyles_text2root = {
 }
 
 
-def convert_linestyle(inputstyle, mode, inputmode=None):
+def convert_linestyle(inputstyle, mode, inputmode=None): # noqa: C901
     """
     Convert *inputstyle* to ROOT or matplotlib format.
 
@@ -769,8 +768,8 @@ class LineStyle(_StyleContainer):
         _StyleContainer.__init__(self, style, convert_linestyle)
 
 
-##############################
-#### Fills ###################
+# #############################
+# ### Fills ###################
 
 fillstyles_root2mpl = {
     0: None,
@@ -798,7 +797,7 @@ fillstyles_text2root = {
 }
 
 
-def convert_fillstyle(inputstyle, mode, inputmode=None):
+def convert_fillstyle(inputstyle, mode, inputmode=None):  # noqa: C901
     """
     Convert *inputstyle* to ROOT or matplotlib format.
 
@@ -876,8 +875,8 @@ class FillStyle(_StyleContainer):
         _StyleContainer.__init__(self, style, convert_fillstyle)
 
 
-##############################
-#### Colors ##################
+# #############################
+# ### Colors ##################
 
 _cnames = {
     "r": "#FF0000",  # @IgnorePep8
@@ -1030,8 +1029,7 @@ _cnames = {
 }
 
 
-def convert_color(color, mode):
-    # noqa: C901
+def convert_color(color, mode):  # noqa: C901
     """
     Convert *color* to a TColor if *mode='root'* or to (r,g,b) if 'mpl'.
 
