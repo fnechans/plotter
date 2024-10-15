@@ -46,7 +46,7 @@ class canvas:
         self.cd()
         p.tpad.Draw()
 
-    def save(self, path: str, verbose=False):
+    def save(self, path: str, verbose: bool = False):
         """Calls SaveAs from TCanvas, creates dirs if necessary
 
         Arguments:
