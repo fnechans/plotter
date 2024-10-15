@@ -302,7 +302,6 @@ class CollectionContainer:
 
         supercollection = SuperCollection(col_title, scale_factor)
         for name in components:
-            
             if name not in self.container.keys():
                 log.warning(
                     f"Collection {name} does not exist, cannot be added to SuperCollection {col_name}"
