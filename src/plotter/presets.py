@@ -5,7 +5,7 @@ from . import loader
 from .legend import legend
 
 import ROOT
-from typing import List
+from typing import List, Optional
 import copy
 
 import logging
@@ -17,8 +17,8 @@ class simple:
     def __init__(
         self,
         plotName: str = "",
-        xTitle: str = "",
-        yTitle: str = "Events",
+        xTitle: Optional[str] = None,
+        yTitle: Optional[str] = "Events",
         isTH1: bool = True,
         autoY=True,
     ):
@@ -65,8 +65,8 @@ class dataMC:
     def __init__(
         self,
         plotName: str = "",
-        xTitle: str = "",
-        yTitle: str = "Events",
+        xTitle: Optional[str] = None,
+        yTitle: Optional[str] = "Events",
         ratioTitle: str = "Ratio",
         fraction: float = 0.3,
         ratio_limits=(0.701, 1.299),
@@ -231,7 +231,12 @@ class dataMC:
 class fraction:
     """E.g. to display fraction of background/signal"""
 
-    def __init__(self, plotName: str = "", xTitle: str = "", yTitle: str = "Fraction"):
+    def __init__(
+        self,
+        plotName: str = "",
+        xTitle: Optional[str] = None,
+        yTitle: Optional[str] = "Fraction",
+    ):
         self.canvas = canvas(plotName)
 
         self.mainPad = pad("fraction")
@@ -272,11 +277,9 @@ class fraction:
 
     def set_xrange(self, min, max):
         self.mainPad.set_xrange(min, max)
-        self.ratioPad.set_xrange(min, max)
 
     def logx(self, doLog=True):
         self.mainPad.logx(doLog)
-        self.ratioPad.logx(doLog)
 
     def save(self, plotName: str, verbose=False):
         self.canvas.save(plotName, verbose)
@@ -286,8 +289,8 @@ class Comparison:
     def __init__(
         self,
         plotName: str = "",
-        xTitle: str = "",
-        yTitle: str = "Events",
+        xTitle: Optional[str] = "",
+        yTitle: Optional[str] = "Events",
         ratioTitle: str = "Ratio",
         fraction: float = 0.3,
         show_nonEmptyOnly: bool = True,
