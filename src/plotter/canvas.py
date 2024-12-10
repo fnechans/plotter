@@ -3,7 +3,6 @@ import ROOT
 from ROOT import TCanvas
 from typing import Dict
 import os
-from .quiet import Quiet
 from .extern.shortuuid import uuid
 
 import logging
