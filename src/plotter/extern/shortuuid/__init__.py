@@ -61,12 +61,12 @@ class ShortUUID(object):
         """
         # If no name is given, generate a random UUID.
         if name is None:
-            uuid = _uu.uuid4()
+            gen_uuid = _uu.uuid4()
         elif "http" not in name.lower():
-            uuid = _uu.uuid5(_uu.NAMESPACE_DNS, name)
+            gen_uuid = _uu.uuid5(_uu.NAMESPACE_DNS, name)
         else:
-            uuid = _uu.uuid5(_uu.NAMESPACE_URL, name)
-        return self.encode(uuid, pad_length)
+            gen_uuid = _uu.uuid5(_uu.NAMESPACE_URL, name)
+        return self.encode(gen_uuid, pad_length)
 
     def random(self, length=22):
         """
