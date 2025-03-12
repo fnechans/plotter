@@ -387,7 +387,6 @@ class Comparison:
 
         return (xMin, xMax)
 
-
     def set_xrange(self, min, max):
         self.custom_xrange = True
         self.mainPad.set_xrange(min, max)
