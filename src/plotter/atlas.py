@@ -51,7 +51,7 @@ def AtlasStyle():
     # use large fonts
     # font=72; // Helvetica italics
     font = 42  # Helvetica
-    tsize = 0.06
+    tsize = 0.04
     atlasStyle.SetTextFont(font)
 
     atlasStyle.SetTextSize(tsize)
@@ -118,7 +118,7 @@ def ATLASLabel(x: float = 0.22, y: float = 0.9, text: str = "",
         p.SetTextColor(color)
         p.DrawLatex(x + delx, y, text)
 
-def get_lumi() -> Dict[str, float]:  
+def get_lumi() -> Dict[str, float]:
     """Returns luminosity for each year in the format
     of dict per mc campaign."""
     luminosity = {}
@@ -138,7 +138,7 @@ def get_year2campaign() -> Dict[str, str]:
         "18": ".mc16e",
     }
 
-    return year2campaign 
+    return year2campaign
 
 def recommended_colors():
     """Some recommended ROOT colors

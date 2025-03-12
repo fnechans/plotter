@@ -322,33 +322,6 @@ class Comparison:
         # stack the MC
         self.histos = histos
 
-        # get xmin, xmin, empty bins are cut away
-        if self.nonEmpty:
-            xMin = histos[0].th.GetBinLowEdge(1)
-            xMax = histos[0].th.GetBinLowEdge(histos[0].th.GetNbinsX() + 1)
-            prevCont = False
-            minDone = False
-            maxDone = False
-            for i in range(histos[0].th.GetNbinsX()):
-                iBin = i + 1
-                if (
-                    histos[0].th.GetBinContent(iBin) == 0
-                    and self.histos[0].th.GetBinContent(iBin) == 0
-                ):
-                    if not minDone:
-                        xMin = histos[0].th.GetBinLowEdge(iBin + 1)
-                    if prevCont:
-                        xMax = histos[0].th.GetBinLowEdge(iBin)
-                        maxDone = True
-                    prevCont = False
-                else:
-                    minDone = True
-                    prevCont = True
-            if not maxDone:
-                xMax = histos[0].th.GetBinLowEdge(self.histos[0].th.GetNbinsX() + 1)
-            self.mainPad.set_xrange(xMin, xMax)
-            self.ratioPad.set_xrange(xMin, xMax)
-
         self.mainPad.add_histos(self.histos)
         self.mainPad.plot_histos()
 
@@ -374,7 +347,49 @@ class Comparison:
         self.leg.add_histos(self.histos)
         self.leg.create_and_draw()
 
+        self.update_ranges()
+
+    def update_ranges(self):
+
+        if self.nonEmpty and not self.custom_xrange:
+            (xmin, xmax) = self._xrange_emptysupressed()
+            self.mainPad.set_xrange(xmin, xmax)
+            self.ratioPad.set_xrange(xmin, xmax)
+
+        self.mainPad.update_range()
+        self.ratioPad.update_range()
+
+    def _xrange_emptysupressed(self):
+        """Determine x range containing nonzero"""  # TODO REVIEW
+        xMin = self.hData.th.GetBinLowEdge(1)
+        xMax = self.hData.th.GetBinLowEdge(self.hData.th.GetNbinsX() + 1)
+        prevCont = False
+        minDone = False
+        maxDone = False
+        for i in range(self.hData.th.GetNbinsX()):
+            iBin = i + 1
+            if (
+                self.hData.th.GetBinContent(iBin) != 0
+                or self.hMCs[0].th.GetBinContent(iBin) != 0
+            ):
+                minDone = True
+                prevCont = True
+                continue
+
+            if not minDone:
+                xMin = self.hData.th.GetBinLowEdge(iBin + 1)
+            if prevCont:
+                xMax = self.hData.th.GetBinLowEdge(iBin)
+                maxDone = True
+            prevCont = False
+        if not maxDone:
+            xMax = self.hData.th.GetBinLowEdge(self.hData.th.GetNbinsX() + 1)
+
+        return (xMin, xMax)
+
+
     def set_xrange(self, min, max):
+        self.custom_xrange = True
         self.mainPad.set_xrange(min, max)
         self.ratioPad.set_xrange(min, max)
 
