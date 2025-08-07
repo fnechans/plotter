@@ -165,21 +165,28 @@ class histo(Plottable):
 
             # binning [ xmin, {nbinx, width}, {nbinx,width}, ...]
             if isinstance(binning[1], tuple):
+                
+                def _edges_from_tuple(edges: List[float], binning: List[Tuple[int, float]]) -> List[float]:
+                    for bindef in binning:
+                        (nbins, width) = bindef
+                        for i in range(nbins):
+                            w = edges[-1] + width
+                            if w <= self.th.GetXaxis().GetXmax():
+                                edges.append(w)
+                            else:
+                                log.warning(
+                                    "Rebinning requires either int or list, got binning" \
+                                    " that exceeds histogram range"
+                                )
+                    return edges
+
                 # Expect [xmin, (nbins, width), (nbins, width), ...]
                 if not isinstance(binning[0], (float, int)):
-                    raise ValueError("First element must be a number when using segmented rebinning")
+                    raise ValueError("First element must be a number when using" \
+                                    " segmented rebinning")
 
                 binedges = [binning[0]]
-                for bindef in binning[1:]:
-                    (nbins, width) = bindef
-                    for i in range(nbins):
-                        w = binedges[-1] + width
-                        if w <= self.th.GetXaxis().GetXmax():
-                            binedges.append(w)
-                        else:
-                            log.warning(
-                                "Rebinning requires either int or list, got binning that exceeds histogram range"
-                            )
+                binedges = _edges_from_tuple(binedges, binning[1:])
                 last_edge = binedges[-1]
                 if last_edge < self.th.GetXaxis().GetXmax():
                     binedges.append(self.th.GetXaxis().GetXmax())
