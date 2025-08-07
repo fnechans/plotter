@@ -169,7 +169,6 @@ class histo(Plottable):
                 if not isinstance(binning[0], (float, int)):
                     raise ValueError("First element must be a number when using segmented rebinning")
 
-
                 binedges = [binning[0]]
                 for bindef in binning[1:]:
                     (nbins, width) = bindef
