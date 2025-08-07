@@ -141,6 +141,22 @@ class histo(Plottable):
                 log.error(f"Unknown option {opt}")
                 raise RuntimeError
 
+    def _edges_from_tuple(self, edges: List[float], binning: List[Tuple[int, float]]) -> List[float]:
+        for bindef in binning:
+            (nbins, width) = bindef
+            for i in range(nbins):
+                w = edges[-1] + width
+                if w <= self.th.GetXaxis().GetXmax():
+                    edges.append(w)
+                else:
+                    log.warning(
+                        "Rebinning requires either int or list, got binning that exceeds histogram range"
+                    )
+        last_edge = edges[-1]
+        if last_edge < self.th.GetXaxis().GetXmax():
+            edges.append(self.th.GetXaxis().GetXmax())
+        return edges
+
     def rebin(self, binning: Union[int, List[Union[float, Tuple[int, float]]]] = []):
         """Rebins histogram either based on nbin or binning.
 
@@ -166,30 +182,12 @@ class histo(Plottable):
             # binning [ xmin, {nbinx, width}, {nbinx,width}, ...]
             if isinstance(binning[1], tuple):
                 
-                def _edges_from_tuple(edges: List[float], binning: List[Tuple[int, float]]) -> List[float]:
-                    for bindef in binning:
-                        (nbins, width) = bindef
-                        for i in range(nbins):
-                            w = edges[-1] + width
-                            if w <= self.th.GetXaxis().GetXmax():
-                                edges.append(w)
-                            else:
-                                log.warning(
-                                    "Rebinning requires either int or list, got binning" \
-                                    " that exceeds histogram range"
-                                )
-                    return edges
-
                 # Expect [xmin, (nbins, width), (nbins, width), ...]
                 if not isinstance(binning[0], (float, int)):
-                    raise ValueError("First element must be a number when using" \
-                                    " segmented rebinning")
+                    raise ValueError("First element must be a number when using segmented rebinning")
 
                 binedges = [binning[0]]
-                binedges = _edges_from_tuple(binedges, binning[1:])
-                last_edge = binedges[-1]
-                if last_edge < self.th.GetXaxis().GetXmax():
-                    binedges.append(self.th.GetXaxis().GetXmax())
+                binedges = self._edges_from_tuple(binedges, binning[1:])
 
             # binning [xmin, x1, x2, ...]
             else:
