@@ -213,16 +213,18 @@ class dataMC:
     def logx(self, doLog=True):
         self.mainPad.logx(doLog)
         self.ratioPad.logx(doLog)
-
-    def save(self, plotName: str, verbose=False):
+    
+    def draw_legend(self, nColumns: Optional[int] = 1):
         self.canvas.tcan.cd()
-        self.leg = legend()
+        self.leg = legend(nColumns=nColumns)
         self.leg.add_histo(self.hData)
         self.leg.add_histos(self.hMCs)
         self.leg.add_histo(self.hErr)
         if self.hShapes != []:
             self.leg.add_histos(self.hShapes)
         self.leg.create_and_draw()
+
+    def save(self, plotName: str, verbose=False):
         if verbose:
             print(plotName)
         self.canvas.save(plotName)

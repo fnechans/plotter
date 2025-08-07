@@ -141,22 +141,56 @@ class histo(Plottable):
                 log.error(f"Unknown option {opt}")
                 raise RuntimeError
 
-    def rebin(self, binning: Union[int, List[float]] = []):
+    def rebin(self, binning: Union[int, List[Union[float, tuple]]] = []):
         """Rebins histogram either based on nbin or binning.
 
-        If variable is int then just merges given number of bins (so TH1::Rebin),
-        otherwise assume binning is list and creates new histogram with that binning.
-
+        - If variable is int it merges given number of bins (so TH1::Rebin)
+        - If it is a list
+           - if it is list of numbers creates new histogram with that binning.
+           - if the format is [xmin, (nbins, width), ...] it creates
+             new histogram with given binning, where each tuple defines
         Arguments:
-            binning (``Union[int, List[float]]``): binning used in the new histogram
+            binning (``Union[int, List[Union[float, tuple]]]``): binning used in the new histogram
         """
 
         if isinstance(binning, int):
             self.th.Rebin(binning)
             return
 
-        self.th = thHelper.rebin(self.th, binning, False)
-        self.apply_all_style()
+        elif isinstance(binning, list):
+
+            if len(binning) < 2:
+                log.error("Rebinning requires either int or list, got empty list")
+                raise ValueError("Rebinning requires either int or list, got empty list")
+
+            # binning [ xmin, {nbinx, width}, {nbinx,width}, ...]
+            if isinstance(binning[1], tuple):
+
+                binedges = [binning[0]]
+                for bindef in binning[1:]:
+                    (nbins, width) = bindef
+                    for i in range(nbins):
+                        w = binedges[-1] + width
+                        if w <= self.th.GetXaxis().GetXmax():
+                            binedges.append(w)
+                        else:
+                            log.warning(
+                                "Rebinning requires either int or list, got binning that exceeds histogram range"
+                            )
+                last_edge = binedges[-1]
+                if last_edge < self.th.GetXaxis().GetXmax():
+                    binedges.append(self.th.GetXaxis().GetXmax())        
+
+            # binning [xmin, x1, x2, ...]
+            else:
+                binedges = binning
+
+            self.th = thHelper.rebin(self.th, binedges, False)
+            self.apply_all_style()
+            return
+        raise TypeError(
+            f"Rebinning requires either int or list, got {type(binning)}"
+        )
 
     def clone(self, th_suffix: Optional[str] = None, histo_title: Optional[str] = None):
 
