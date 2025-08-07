@@ -181,7 +181,6 @@ class histo(Plottable):
 
             # binning [ xmin, {nbinx, width}, {nbinx,width}, ...]
             if isinstance(binning[1], tuple):
-                
                 # Expect [xmin, (nbins, width), (nbins, width), ...]
                 if not isinstance(binning[0], (float, int)):
                     raise ValueError("First element must be a number when using segmented rebinning")
