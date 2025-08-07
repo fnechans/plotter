@@ -188,7 +188,7 @@ class histo(Plottable):
                 binedges = [binning[0]]
                 binedges = self._edges_from_tuple(binedges, binning[1:])
 
-            # binning [xmin, x1, x2, ...]
+            # binning [xmin, x1, x2, ... ]
             else:
                 binedges = binning
 
