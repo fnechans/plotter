@@ -179,7 +179,7 @@ class histo(Plottable):
                             )
                 last_edge = binedges[-1]
                 if last_edge < self.th.GetXaxis().GetXmax():
-                    binedges.append(self.th.GetXaxis().GetXmax())        
+                    binedges.append(self.th.GetXaxis().GetXmax())
 
             # binning [xmin, x1, x2, ...]
             else:

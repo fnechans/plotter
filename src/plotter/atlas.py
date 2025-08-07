@@ -122,7 +122,7 @@ def get_lumi() -> Dict[str, float]:
     """Returns luminosity for each year in the format
     of dict per mc campaign."""
     luminosity = {}
-    luminosity["mc16a"] = 3244.54 + 33402.2 #33402 + 3244.54
+    luminosity["mc16a"] = 3244.54 + 33402.2
     luminosity["mc16d"] = 44630.6
     luminosity["mc16e"] = 58791.6
     return luminosity

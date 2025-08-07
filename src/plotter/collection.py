@@ -243,17 +243,20 @@ class CollectionContainer:
     def __getitem__(self, index) -> Union[collection, SuperCollection]:
         return self.container[index]
 
-    def add_dataset(self, ds: dataset, sow: Optional[sumOfWeightHelper] = None, replace = False) -> None:
+    def add_dataset(self, ds: dataset, sow: Optional[sumOfWeightHelper] = None, replace=False) -> None:
         """
         Add a dataset to the collection and create a corresponding collection in the library.
 
         Args:
             ds (dataset): The dataset to be added.
-            sow (Optional[sumOfWeightHelper], optional): An optional sum of weight helper associated with the dataset. Defaults to None.
-            replace (bool, optional): If True, replaces any existing collection with the same name. Defaults to False.
+            sow (Optional[sumOfWeightHelper], optional): An optional sum of weight helper
+            associated with the dataset. Defaults to None.
+            replace (bool, optional): If True, replaces any existing collection with the
+            same name. Defaults to False.
 
-            # If 'replace' is set to True, any existing collection in the library with the same name as the dataset
-            # will be replaced by the new collection.
+        Note:
+            If 'replace' is set to True, any existing collection in the library with the
+            same name as the dataset will be replaced by the new collection.
         """
 
         col = collection(ds.name, sow)
@@ -274,7 +277,6 @@ class CollectionContainer:
 
             return True
         return False
-    
 
     def get(self, name):
         """ Get sample from supercollection
@@ -284,8 +286,7 @@ class CollectionContainer:
             raise RuntimeError
         return self.container[name]
 
-
-    def add_collection(self, col_name, col: collection, replace = False) -> None:
+    def add_collection(self, col_name, col: collection, replace=False) -> None:
         """
         Add a collection to the library container.
 
@@ -309,7 +310,6 @@ class CollectionContainer:
                     f"Element {col_name} already exists in container with title {element.title}" +
                     f" It is {element.__class__.__name__} type of size " + str(len(element)) + ". Replacing!"
                 )
-
 
         self.container[col_name] = col
 

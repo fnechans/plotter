@@ -213,7 +213,7 @@ class dataMC:
     def logx(self, doLog=True):
         self.mainPad.logx(doLog)
         self.ratioPad.logx(doLog)
-    
+
     def draw_legend(self, nColumns: Optional[int] = 1):
         self.canvas.tcan.cd()
         self.leg = legend(nColumns=nColumns)
