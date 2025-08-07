@@ -2,7 +2,7 @@ import ROOT
 from ROOT import TH1
 from . import thHelper
 from . import loader
-from typing import Optional, Dict, Any, List, Union
+from typing import Optional, Dict, Any, List, Union, Tuple
 from plotter.plottingbase import Plottable
 
 import logging
@@ -141,7 +141,7 @@ class histo(Plottable):
                 log.error(f"Unknown option {opt}")
                 raise RuntimeError
 
-    def rebin(self, binning: Union[int, List[Union[float, tuple]]] = []):
+    def rebin(self, binning: Union[int, List[Union[float, Tuple[int, float]]]] = []):
         """Rebins histogram either based on nbin or binning.
 
         - If variable is int it merges given number of bins (so TH1::Rebin)

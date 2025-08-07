@@ -214,7 +214,7 @@ class dataMC:
         self.mainPad.logx(doLog)
         self.ratioPad.logx(doLog)
 
-    def draw_legend(self, nColumns: Optional[int] = 1):
+    def draw_legend(self, nColumns: int = 1):
         self.canvas.tcan.cd()
         self.leg = legend(nColumns=nColumns)
         self.leg.add_histo(self.hData)
