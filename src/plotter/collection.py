@@ -237,7 +237,7 @@ class SuperCollection:
 class CollectionContainer:
     """Manages a set of collections"""
 
-    def __init__(self) -> None:
+    def __init__(self):
         self.container: Dict[str, Union[collection, SuperCollection]] = {}
 
     def __getitem__(self, index: str) -> Union[collection, SuperCollection]:

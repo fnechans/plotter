@@ -206,7 +206,6 @@ class histo(Plottable):
 
         self.th = thHelper.rebin(self.th, binedges, False)
         self.apply_all_style()
-        return
 
     def clone(self, th_suffix: Optional[str] = None, histo_title: Optional[str] = None):
 
