@@ -201,7 +201,7 @@ class histo(Plottable):
                 f"Binning {binning} does not have correct format, has to be either:\n"
                 " - int\n"
                 " - list of numbers\n"
-                " - tuple of float + tuples (number of bins, bin width)"
+                " - tuple of float + list of tuples (number of bins, bin width)"
             )
 
         self.th = thHelper.rebin(self.th, binedges, False)
