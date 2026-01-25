@@ -119,8 +119,8 @@ class dataset:
             h = self.tFile.Get(objectName)
             if not h:  # is not None does not work for some reason
                 if skipBad:
-                    log.warning(f"Object {objectName} does not exist in dataset "
-                                f"{self.name}! File path  {self.path}. Skipping!")
+#                    log.warning(f"Object {objectName} does not exist in dataset "
+#                                f"{self.name}! File path  {self.path}. Skipping!")
                     return None
                 else:
                     log.error(f"Object {objectName} does not exist in dataset "

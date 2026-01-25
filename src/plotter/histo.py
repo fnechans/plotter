@@ -99,12 +99,16 @@ class histo(Plottable):
             suffix (``str``): suffix behind the name of the histogram
             fillToLine (``bool``): switch from fill to line
         """
+        
         hratio = self.clone(th_suffix=suffix)
         # TODO: histo of different type?
         if self.isTH1:
             thHelper.divide_ratio(hratio.th, otherHisto.th)
         elif self.isTGraph:
             thHelper.divide_ratio_graph(hratio.th, otherHisto.th)
+        else:
+            log.error("Cannot divide histo, not TH1 or TGraph")
+            raise TypeError("Cannot divide histo, not TH1 or TGraph")
         # switch colors if requested
         fillcolor = None if fillToLine else self.fillcolor
         if fillcolor is None:
@@ -212,3 +216,23 @@ class histo(Plottable):
         h.decorate(self)
 
         return h
+    
+    def add(self, otherHisto: Union["histo", List["histo"]]):
+        if isinstance(otherHisto, histo):
+            self.th.Add(otherHisto.th)
+        elif isinstance(otherHisto, list):
+            for h in otherHisto:
+                if not isinstance(h, histo):
+                    raise TypeError("All elements must be of type histo")
+                self.th.Add(h.th)
+        else:
+            raise TypeError("Argument must be a histo or list of histo")
+        
+    def scale(self, factor: float):
+        self.th.Scale(factor)
+    
+    def normalize(self):
+        integral = self.th.Integral()
+        if integral != 0:
+            self.th.Scale(1.0 / integral)
+

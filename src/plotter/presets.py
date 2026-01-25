@@ -67,7 +67,7 @@ class dataMC:
         plotName: str = "",
         xTitle: Optional[str] = None,
         yTitle: Optional[str] = "Events",
-        ratioTitle: str = "Ratio",
+        ratioTitle: str = "Data / MC",
         fraction: float = 0.3,
         ratio_limits=(0.701, 1.299),
         nonEmpty=True,
@@ -315,6 +315,7 @@ class Comparison:
         self.ratioPad.set_title(xTitle, ratioTitle)
 
         self.nonEmpty = show_nonEmptyOnly
+        self.custom_xrange = None
 
     def add_and_plot(self, histos: List[histo]):
         if len(histos) == 0:
@@ -351,6 +352,14 @@ class Comparison:
 
         self.update_ranges()
 
+    def draw_legend(self, nColumns: int = 1):
+        self.canvas.tcan.cd()
+        self.leg = legend(nColumns=nColumns)
+        for h in self.histos:
+            self.leg.add_histo(h)
+        self.leg.add_histo(self.hErr)
+        self.leg.create_and_draw()
+
     def update_ranges(self):
 
         if self.nonEmpty and not self.custom_xrange:
@@ -363,29 +372,30 @@ class Comparison:
 
     def _xrange_emptysupressed(self):
         """Determine x range containing nonzero"""  # TODO REVIEW
-        xMin = self.hData.th.GetBinLowEdge(1)
-        xMax = self.hData.th.GetBinLowEdge(self.hData.th.GetNbinsX() + 1)
+        # reference
+        hist = self.histos[0]
+        xMin = hist.th.GetBinLowEdge(1)
+        xMax = hist.th.GetBinLowEdge(hist.th.GetNbinsX() + 1)
         prevCont = False
         minDone = False
         maxDone = False
-        for i in range(self.hData.th.GetNbinsX()):
+        for i in range(hist.th.GetNbinsX()):
             iBin = i + 1
             if (
-                self.hData.th.GetBinContent(iBin) != 0
-                or self.hMCs[0].th.GetBinContent(iBin) != 0
+                hist.th.GetBinContent(iBin) != 0
             ):
                 minDone = True
                 prevCont = True
                 continue
 
             if not minDone:
-                xMin = self.hData.th.GetBinLowEdge(iBin + 1)
+                xMin = hist.th.GetBinLowEdge(iBin + 1)
             if prevCont:
-                xMax = self.hData.th.GetBinLowEdge(iBin)
+                xMax = hist.th.GetBinLowEdge(iBin)
                 maxDone = True
             prevCont = False
         if not maxDone:
-            xMax = self.hData.th.GetBinLowEdge(self.hData.th.GetNbinsX() + 1)
+            xMax = hist.th.GetBinLowEdge(hist.th.GetNbinsX() + 1)
 
         return (xMin, xMax)
 
@@ -393,6 +403,9 @@ class Comparison:
         self.custom_xrange = True
         self.mainPad.set_xrange(min, max)
         self.ratioPad.set_xrange(min, max)
+
+    def set_yrange(self, min, max):
+        self.mainPad.set_yrange(min, max)    
 
     def logx(self, doLog=True):
         self.mainPad.logx(doLog)

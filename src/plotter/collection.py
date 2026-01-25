@@ -210,6 +210,8 @@ class SuperCollection:
         for col in self.container:
 
             hist = col.get_th(histoName, norm, skipBad)
+            if hist is None:
+                continue
 
             if collTH:
                 collTH.Add(hist)
@@ -232,6 +234,9 @@ class SuperCollection:
                 collTH.Scale(1.0 / collTH.Integral())
 
         return collTH
+    
+    def get_collections(self):
+        return [col for col in self.container if isinstance(col, collection)]
 
 
 class CollectionContainer:
@@ -308,9 +313,9 @@ class CollectionContainer:
             else:
                 log.info(
                     f"Element {col_name} already exists in container with title {element.title}" +
-                    f" It is {element.__class__.__name__} type of size " + str(len(element)) + ". Replacing!"
+                    f" It is {element.__class__.__name__} type of size " + str(len(element)) + ". Replacing as replace = Truee!"
                 )
-
+        
         self.container[col_name] = col
 
     def add_supercollection(self, col_name, col: SuperCollection) -> None:
@@ -349,3 +354,24 @@ class CollectionContainer:
 
         if len(supercollection):
             self.add_supercollection(col_name, supercollection)
+
+    def __str__(self):
+
+        str = ""
+        for key, col in self.container.items():
+            str += f"{key} "
+        str += "\n"
+        for key, col in self.container.items():
+            if isinstance(col, SuperCollection): 
+                str+= f" (SuperCollection):  {key}\n"
+                container = col.container
+                for cont in container:
+                    if isinstance(cont, SuperCollection): str+= " --- (SuperCollection)\n"
+                    if isinstance(cont, collection): 
+                        str+= "    --- (collection)\n"
+                        for dataset in cont.get_datasets():
+                            str += f"        --- {dataset.name} : {dataset.path} \n"
+
+        return str
+        
+
