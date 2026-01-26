@@ -45,8 +45,7 @@ class histo(Plottable):
         self.fillcolor = fillcolor
         self.config = loader.load_config(configPath) if configPath != "" else {}
         self.apply_all_style()
-        if drawoption != "":
-            self.drawoption = drawoption
+        self.drawoption = drawoption
 
         self.isTH1 = th.InheritsFrom("TH1")
         self.isTGraph = th.InheritsFrom("TGraph")
@@ -145,7 +144,9 @@ class histo(Plottable):
                 log.error(f"Unknown option {opt}")
                 raise RuntimeError
 
-    def _edges_from_tuple(self, edges: List[float], binning: List[Tuple[int, float]]) -> List[float]:
+    def _edges_from_tuple(
+        self, edges: List[float], binning: List[Tuple[int, float]]
+    ) -> List[float]:
         for bindef in binning:
             (nbins, width) = bindef
             for i in range(nbins):
@@ -161,7 +162,10 @@ class histo(Plottable):
             edges.append(self.th.GetXaxis().GetXmax())
         return edges
 
-    def rebin(self, binning: Union[int, List[Union[float, Tuple[int, float]]]] = []):
+    def rebin(
+        self,
+        binning: Union[int, List[float], Tuple[float, list[Tuple[int, float]]]] = [],
+    ):
         """Rebins histogram either based on nbin or binning.
 
         - If variable is int it merges given number of bins (so TH1::Rebin)
@@ -177,31 +181,35 @@ class histo(Plottable):
             self.th.Rebin(binning)
             return
 
-        elif isinstance(binning, list):
+        # binning [xmin, x1, x2, ... ]
+        if isinstance(binning, list) and all(isinstance(x, float) for x in binning):
 
             if len(binning) < 2:
                 log.error("Rebinning requires either int or list, got empty list")
-                raise ValueError("Rebinning requires either int or list, got empty list")
+                raise ValueError(
+                    "Rebinning requires either int or list, got empty list"
+                )
 
-            # binning [ xmin, {nbinx, width}, {nbinx,width}, ...]
-            if isinstance(binning[1], tuple):
-                # Expect [xmin, (nbins, width), (nbins, width), ...]
-                if not isinstance(binning[0], (float, int)):
-                    raise ValueError("First element must be a number when using segmented rebinning")
+            binedges = binning
 
-                binedges = [binning[0]]
-                binedges = self._edges_from_tuple(binedges, binning[1:])
+        # binning [ xmin, {nbinx, width}, {nbinx,width}, ...]
+        elif (
+            isinstance(binning, tuple)
+            and isinstance(binning[0], float)
+            and isinstance(binning[1], list)
+            and all(isinstance(x, tuple) for x in binning[1])
+        ):
+            binedges = self._edges_from_tuple([binning[0]], binning[1])
+        else:
+            raise ValueError(
+                f"Binning {binning} does not have correct format, has to be either:\n"
+                " - int\n"
+                " - list of numbers\n"
+                " - tuple of float + list of tuples (number of bins, bin width)"
+            )
 
-            # binning [xmin, x1, x2, ... ]
-            else:
-                binedges = binning
-
-            self.th = thHelper.rebin(self.th, binedges, False)
-            self.apply_all_style()
-            return
-        raise TypeError(
-            f"Rebinning requires either int or list, got {type(binning)}"
-        )
+        self.th = thHelper.rebin(self.th, binedges, False)
+        self.apply_all_style()
 
     def clone(self, th_suffix: Optional[str] = None, histo_title: Optional[str] = None):
 
