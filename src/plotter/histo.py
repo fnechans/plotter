@@ -98,7 +98,7 @@ class histo(Plottable):
             suffix (``str``): suffix behind the name of the histogram
             fillToLine (``bool``): switch from fill to line
         """
-        
+
         hratio = self.clone(th_suffix=suffix)
         # TODO: histo of different type?
         if self.isTH1:
@@ -224,7 +224,7 @@ class histo(Plottable):
         h.decorate(self)
 
         return h
-    
+
     def add(self, otherHisto: Union["histo", List["histo"]]):
         if isinstance(otherHisto, histo):
             self.th.Add(otherHisto.th)
@@ -235,12 +235,11 @@ class histo(Plottable):
                 self.th.Add(h.th)
         else:
             raise TypeError("Argument must be a histo or list of histo")
-        
+
     def scale(self, factor: float):
         self.th.Scale(factor)
-    
+
     def normalize(self):
         integral = self.th.Integral()
         if integral != 0:
             self.th.Scale(1.0 / integral)
-

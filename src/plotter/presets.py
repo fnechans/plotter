@@ -405,7 +405,7 @@ class Comparison:
         self.ratioPad.set_xrange(min, max)
 
     def set_yrange(self, min, max):
-        self.mainPad.set_yrange(min, max)    
+        self.mainPad.set_yrange(min, max)
 
     def logx(self, doLog=True):
         self.mainPad.logx(doLog)

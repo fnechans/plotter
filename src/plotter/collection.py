@@ -234,7 +234,7 @@ class SuperCollection:
                 collTH.Scale(1.0 / collTH.Integral())
 
         return collTH
-    
+
     def get_collections(self):
         return [col for col in self.container if isinstance(col, collection)]
 
@@ -242,7 +242,7 @@ class SuperCollection:
 class CollectionContainer:
     """Manages a set of collections"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.container: Dict[str, Union[collection, SuperCollection]] = {}
 
     def __getitem__(self, index: str) -> Union[collection, SuperCollection]:
@@ -313,9 +313,9 @@ class CollectionContainer:
             else:
                 log.info(
                     f"Element {col_name} already exists in container with title {element.title}" +
-                    f" It is {element.__class__.__name__} type of size " + str(len(element)) + ". Replacing as replace = Truee!"
+                    f" It is {element.__class__.__name__} type of size " + str(len(element)) + ". Replacing as replace = True!"
                 )
-        
+
         self.container[col_name] = col
 
     def add_supercollection(self, col_name, col: SuperCollection) -> None:
@@ -362,16 +362,15 @@ class CollectionContainer:
             str += f"{key} "
         str += "\n"
         for key, col in self.container.items():
-            if isinstance(col, SuperCollection): 
-                str+= f" (SuperCollection):  {key}\n"
+            if isinstance(col, SuperCollection):
+                str += f" (SuperCollection):  {key}\n"
                 container = col.container
                 for cont in container:
-                    if isinstance(cont, SuperCollection): str+= " --- (SuperCollection)\n"
-                    if isinstance(cont, collection): 
-                        str+= "    --- (collection)\n"
-                        for dataset in cont.get_datasets():
-                            str += f"        --- {dataset.name} : {dataset.path} \n"
+                    if isinstance(cont, SuperCollection):
+                        str += " --- (SuperCollection)\n"
+                    if isinstance(cont, collection):
+                        str += "    --- (collection)\n"
+                        for ds in cont.get_datasets():
+                            str += f"        --- {ds.name} : {ds.path} \n"
 
         return str
-        
-
