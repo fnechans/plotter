@@ -2,7 +2,7 @@ import ROOT
 from ROOT import TH1
 from . import thHelper
 from . import loader
-from typing import Optional, Dict, Any, List, Union
+from typing import Optional, Dict, Any, List, Union, Tuple
 from plotter.plottingbase import Plottable
 
 import logging
@@ -45,8 +45,7 @@ class histo(Plottable):
         self.fillcolor = fillcolor
         self.config = loader.load_config(configPath) if configPath != "" else {}
         self.apply_all_style()
-        if drawoption != "":
-            self.drawoption = drawoption
+        self.drawoption = drawoption
 
         self.isTH1 = th.InheritsFrom("TH1")
         self.isTGraph = th.InheritsFrom("TGraph")
@@ -99,12 +98,16 @@ class histo(Plottable):
             suffix (``str``): suffix behind the name of the histogram
             fillToLine (``bool``): switch from fill to line
         """
+
         hratio = self.clone(th_suffix=suffix)
         # TODO: histo of different type?
         if self.isTH1:
             thHelper.divide_ratio(hratio.th, otherHisto.th)
         elif self.isTGraph:
             thHelper.divide_ratio_graph(hratio.th, otherHisto.th)
+        else:
+            log.error("Cannot divide histo, not TH1 or TGraph")
+            raise TypeError("Cannot divide histo, not TH1 or TGraph")
         # switch colors if requested
         fillcolor = None if fillToLine else self.fillcolor
         if fillcolor is None:
@@ -141,21 +144,71 @@ class histo(Plottable):
                 log.error(f"Unknown option {opt}")
                 raise RuntimeError
 
-    def rebin(self, binning: Union[int, List[float]] = []):
+    def _edges_from_tuple(
+        self, edges: List[float], binning: List[Tuple[int, float]]
+    ) -> List[float]:
+        for bindef in binning:
+            (nbins, width) = bindef
+            for i in range(nbins):
+                w = edges[-1] + width
+                if w <= self.th.GetXaxis().GetXmax():
+                    edges.append(w)
+                else:
+                    log.warning(
+                        "Rebinning requires either int or list, got binning that exceeds histogram range"
+                    )
+        last_edge = edges[-1]
+        if last_edge < self.th.GetXaxis().GetXmax():
+            edges.append(self.th.GetXaxis().GetXmax())
+        return edges
+
+    def rebin(
+        self,
+        binning: Union[int, List[float], Tuple[float, list[Tuple[int, float]]]] = [],
+    ):
         """Rebins histogram either based on nbin or binning.
 
-        If variable is int then just merges given number of bins (so TH1::Rebin),
-        otherwise assume binning is list and creates new histogram with that binning.
-
+        - If variable is int it merges given number of bins (so TH1::Rebin)
+        - If it is a list
+           - if it is list of numbers creates new histogram with that binning.
+           - if the format is [xmin, (nbins, width), ...] it creates
+             new histogram with given binning, where each tuple defines
         Arguments:
-            binning (``Union[int, List[float]]``): binning used in the new histogram
+            binning (``Union[int, List[Union[float, tuple]]]``): binning used in the new histogram
         """
 
         if isinstance(binning, int):
             self.th.Rebin(binning)
             return
 
-        self.th = thHelper.rebin(self.th, binning, False)
+        # binning [xmin, x1, x2, ... ]
+        if isinstance(binning, list) and all(isinstance(x, float) for x in binning):
+
+            if len(binning) < 2:
+                log.error("Rebinning requires either int or list, got empty list")
+                raise ValueError(
+                    "Rebinning requires either int or list, got empty list"
+                )
+
+            binedges = binning
+
+        # binning [ xmin, {nbinx, width}, {nbinx,width}, ...]
+        elif (
+            isinstance(binning, tuple)
+            and isinstance(binning[0], float)
+            and isinstance(binning[1], list)
+            and all(isinstance(x, tuple) for x in binning[1])
+        ):
+            binedges = self._edges_from_tuple([binning[0]], binning[1])
+        else:
+            raise ValueError(
+                f"Binning {binning} does not have correct format, has to be either:\n"
+                " - int\n"
+                " - list of numbers\n"
+                " - tuple of float + list of tuples (number of bins, bin width)"
+            )
+
+        self.th = thHelper.rebin(self.th, binedges, False)
         self.apply_all_style()
 
     def clone(self, th_suffix: Optional[str] = None, histo_title: Optional[str] = None):
@@ -171,3 +224,22 @@ class histo(Plottable):
         h.decorate(self)
 
         return h
+
+    def add(self, otherHisto: Union["histo", List["histo"]]):
+        if isinstance(otherHisto, histo):
+            self.th.Add(otherHisto.th)
+        elif isinstance(otherHisto, list):
+            for h in otherHisto:
+                if not isinstance(h, histo):
+                    raise TypeError("All elements must be of type histo")
+                self.th.Add(h.th)
+        else:
+            raise TypeError("Argument must be a histo or list of histo")
+
+    def scale(self, factor: float):
+        self.th.Scale(factor)
+
+    def normalize(self):
+        integral = self.th.Integral()
+        if integral != 0:
+            self.th.Scale(1.0 / integral)

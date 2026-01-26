@@ -210,6 +210,8 @@ class SuperCollection:
         for col in self.container:
 
             hist = col.get_th(histoName, norm, skipBad)
+            if hist is None:
+                continue
 
             if collTH:
                 collTH.Add(hist)
@@ -233,33 +235,45 @@ class SuperCollection:
 
         return collTH
 
+    def get_collections(self):
+        return [col for col in self.container if isinstance(col, collection)]
+
 
 class CollectionContainer:
     """Manages a set of collections"""
 
-    def __init__(self):
-        self.container: Dict[Union[collection, SuperCollection]] = {}
+    def __init__(self) -> None:
+        self.container: Dict[str, Union[collection, SuperCollection]] = {}
 
-    def __getitem__(self, index) -> Union[collection, SuperCollection]:
+    def __getitem__(self, index: str) -> Union[collection, SuperCollection]:
         return self.container[index]
 
-    def add_dataset(self, ds: dataset, sow: Optional[sumOfWeightHelper] = None) -> None:
-        """Add dataset and create a correponsing collection in the librarly"""
+    def add_dataset(self, ds: dataset, sow: Optional[sumOfWeightHelper] = None, replace=False) -> None:
+        """
+        Add a dataset to the collection and create a corresponding collection in the library.
+
+        Args:
+            ds (dataset): The dataset to be added.
+            sow (Optional[sumOfWeightHelper], optional): An optional sum of weight helper
+            associated with the dataset. Defaults to None.
+            replace (bool, optional): If True, replaces any existing collection with the
+            same name. Defaults to False.
+
+        Note:
+            If 'replace' is set to True, any existing collection in the library with the
+            same name as the dataset will be replaced by the new collection.
+        """
 
         col = collection(ds.name, sow)
         col.add_dataset(ds)
 
-        self.add_collection(ds.name, col)
+        self.add_collection(ds.name, col, replace)
 
     def _exist_check(self, col_name):
 
         if col_name in self.container.keys():
             element = self.container[col_name]
 
-            log.error(
-                f"Element {col_name} already exists in container with title {element.title}" +
-                f" It is {element.__class__.__name__} type of size " + str(len(element)) + ". Keeping old!"
-            )
             if isinstance(element, collection):
                 if len(element) == 1:
                     log.debug(
@@ -269,13 +283,38 @@ class CollectionContainer:
             return True
         return False
 
-    def add_collection(self, col_name, col: collection) -> None:
-        """Add collection to the library"""
+    def get(self, name):
+        """ Get sample from supercollection
+        """
+        if name not in self.container.keys():
+            log.error(f"Super collection {name} does not exist")
+            raise RuntimeError
+        return self.container[name]
+
+    def add_collection(self, col_name, col: collection, replace=False) -> None:
+        """
+        Add a collection to the library container.
+
+        If a collection with the same name exists, it can be replaced if 'replace' is True.
+        """
+
+        if len(col) == 1:
+            log.debug(f"New collection is a dataset : {col.datasets[0].path}")
 
         if self._exist_check(col_name):
-            if len(col) == 1:
-                log.debug(f"New collection is a dataset : {col.datasets[0].path}")
-            return
+            element = self.container[col_name]
+            if not replace:
+
+                log.error(
+                    f"Element {col_name} already exists in container with title {element.title}" +
+                    f" It is {element.__class__.__name__} type of size " + str(len(element)) + ". Keeping old!"
+                )
+                return
+            else:
+                log.info(
+                    f"Element {col_name} already exists in container with title {element.title}" +
+                    f" It is {element.__class__.__name__} type of size " + str(len(element)) + ". Replacing as replace = True!"
+                )
 
         self.container[col_name] = col
 
@@ -315,3 +354,23 @@ class CollectionContainer:
 
         if len(supercollection):
             self.add_supercollection(col_name, supercollection)
+
+    def __str__(self):
+
+        str = ""
+        for key, col in self.container.items():
+            str += f"{key} "
+        str += "\n"
+        for key, col in self.container.items():
+            if isinstance(col, SuperCollection):
+                str += f" (SuperCollection):  {key}\n"
+                container = col.container
+                for cont in container:
+                    if isinstance(cont, SuperCollection):
+                        str += " --- (SuperCollection)\n"
+                    if isinstance(cont, collection):
+                        str += "    --- (collection)\n"
+                        for ds in cont.get_datasets():
+                            str += f"        --- {ds.name} : {ds.path} \n"
+
+        return str

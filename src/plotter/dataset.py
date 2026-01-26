@@ -118,8 +118,12 @@ class dataset:
         if self.goodFile:
             h = self.tFile.Get(objectName)
             if not h:  # is not None does not work for some reason
-                log.error(f"Object {objectName} does not exist in dataset {self.name}!")
-                raise RuntimeError
+                if skipBad:
+                    return None
+                else:
+                    log.error(f"Object {objectName} does not exist in dataset "
+                              f"{self.name}! File path  {self.path}")
+                    raise RuntimeError
             return h
         return None
 
