@@ -194,18 +194,17 @@ class histo(Plottable):
 
         # binning [ xmin, {nbinx, width}, {nbinx,width}, ...]
         elif (
-            isinstance(binning, tuple)
+            isinstance(binning, list)
             and isinstance(binning[0], float)
-            and isinstance(binning[1], list)
-            and all(isinstance(x, tuple) for x in binning[1])
+            and all(isinstance(x, tuple) for x in binning[1:])
         ):
-            binedges = self._edges_from_tuple([binning[0]], binning[1])
+            binedges = self._edges_from_tuple([binning[0]], binning[1:])
         else:
             raise ValueError(
                 f"Binning {binning} does not have correct format, has to be either:\n"
                 " - int\n"
                 " - list of numbers\n"
-                " - tuple of float + list of tuples (number of bins, bin width)"
+                " - list of float + tuples (number of bins, bin width)"
             )
 
         self.th = thHelper.rebin(self.th, binedges, False)
