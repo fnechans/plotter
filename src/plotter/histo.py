@@ -44,8 +44,8 @@ class histo(Plottable):
         self.linecolor = linecolor
         self.fillcolor = fillcolor
         self.config = loader.load_config(configPath) if configPath != "" else {}
-        self.apply_all_style()
         self.drawoption = drawoption
+        self.apply_all_style()
 
         self.isTH1 = th.InheritsFrom("TH1")
         self.isTGraph = th.InheritsFrom("TGraph")
