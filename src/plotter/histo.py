@@ -44,8 +44,8 @@ class histo(Plottable):
         self.linecolor = linecolor
         self.fillcolor = fillcolor
         self.config = loader.load_config(configPath) if configPath != "" else {}
-        self.apply_all_style()
         self.drawoption = drawoption
+        self.apply_all_style()
 
         self.isTH1 = th.InheritsFrom("TH1")
         self.isTGraph = th.InheritsFrom("TGraph")
@@ -162,10 +162,7 @@ class histo(Plottable):
             edges.append(self.th.GetXaxis().GetXmax())
         return edges
 
-    def rebin(
-        self,
-        binning: Union[int, List[float], Tuple[float, list[Tuple[int, float]]]] = [],
-    ):
+    def rebin(self, binning: Union[int, List[Union[float, Tuple[int, float]]]]):
         """Rebins histogram either based on nbin or binning.
 
         - If variable is int it merges given number of bins (so TH1::Rebin)
@@ -194,21 +191,20 @@ class histo(Plottable):
 
         # binning [ xmin, {nbinx, width}, {nbinx,width}, ...]
         elif (
-            isinstance(binning, tuple)
-            and isinstance(binning[0], float)
-            and isinstance(binning[1], list)
-            and all(isinstance(x, tuple) for x in binning[1])
+            isinstance(binning, list)
+            and isinstance(binning[0], (float, int))
+            and all(isinstance(x, tuple) for x in binning[1:])
         ):
-            binedges = self._edges_from_tuple([binning[0]], binning[1])
+            binedges = self._edges_from_tuple([binning[0]], binning[1:])  # type: ignore
         else:
             raise ValueError(
                 f"Binning {binning} does not have correct format, has to be either:\n"
                 " - int\n"
                 " - list of numbers\n"
-                " - tuple of float + list of tuples (number of bins, bin width)"
+                " - list of float + tuples (number of bins, bin width)"
             )
 
-        self.th = thHelper.rebin(self.th, binedges, False)
+        self.th = thHelper.rebin(self.th, binedges, False)  # type: ignore
         self.apply_all_style()
 
     def clone(self, th_suffix: Optional[str] = None, histo_title: Optional[str] = None):
